@@ -11,8 +11,8 @@ type Product struct {
 	ContactEmail string `json:"contactEmail"`
 }
 
-type Test struct {
+type Repo struct {
 	gorm.Model
-	Name    string `json:"name"`
-	RepoURL string `json:"repoURL"`
+	Name string `json:"name"`
+	Url  string `json:"url"`
 }

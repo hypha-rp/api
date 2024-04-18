@@ -25,7 +25,7 @@ func main() {
 		log.Fatal("Could not connect to database: ", err)
 	}
 
-	if err := db.AutoMigrate(dbConn, &tables.Product{}, &tables.Test{}); err != nil {
+	if err := db.AutoMigrate(dbConn, &tables.Product{}, &tables.Repo{}); err != nil {
 		log.Fatalf("Could not migrate tables: %v", err)
 	}
 

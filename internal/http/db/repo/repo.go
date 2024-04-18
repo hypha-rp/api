@@ -1,4 +1,4 @@
-package test
+package repo
 
 import (
 	"hypha/api/internal/db/tables"
@@ -18,7 +18,7 @@ func SetupTestRoutes(router *gin.RouterGroup, dbOperations utils.DatabaseOperati
 }
 
 func CreateTest(dbOperations utils.DatabaseOperations, context *gin.Context) {
-	var newTest tables.Test
+	var newTest tables.Repo
 	if err := context.ShouldBindJSON(&newTest); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -33,7 +33,7 @@ func CreateTest(dbOperations utils.DatabaseOperations, context *gin.Context) {
 }
 
 func GetTest(dbOperations utils.DatabaseOperations, context *gin.Context) {
-	var existingTest tables.Test
+	var existingTest tables.Repo
 	testID := context.Param("id")
 
 	if err := dbOperations.First(&existingTest, "id = ?", testID); err != nil {

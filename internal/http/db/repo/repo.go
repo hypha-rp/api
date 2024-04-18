@@ -3,43 +3,25 @@ package repo
 import (
 	"hypha/api/internal/db/tables"
 	"hypha/api/internal/http/db/utils"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-func SetupTestRoutes(router *gin.RouterGroup, dbOperations utils.DatabaseOperations) {
-	router.POST("/test", func(context *gin.Context) {
-		CreateTest(dbOperations, context)
+func SetupRepoRoutes(router *gin.RouterGroup, dbOperations utils.DatabaseOperations) {
+	router.POST("/repo", func(context *gin.Context) {
+		CreateRepo(dbOperations, context)
 	})
-	router.GET("/test/:id", func(context *gin.Context) {
-		GetTest(dbOperations, context)
+	router.GET("/repo/:id", func(context *gin.Context) {
+		GetRepo(dbOperations, context)
 	})
 }
 
-func CreateTest(dbOperations utils.DatabaseOperations, context *gin.Context) {
-	var newTest tables.Repo
-	if err := context.ShouldBindJSON(&newTest); err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	if err := dbOperations.Create(&newTest); err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	context.JSON(http.StatusOK, newTest)
+func CreateRepo(dbOperations utils.DatabaseOperations, context *gin.Context) {
+	var newRepo tables.Repo
+	utils.CreateResource(dbOperations, context, &newRepo)
 }
 
-func GetTest(dbOperations utils.DatabaseOperations, context *gin.Context) {
-	var existingTest tables.Repo
-	testID := context.Param("id")
-
-	if err := dbOperations.First(&existingTest, "id = ?", testID); err != nil {
-		context.JSON(http.StatusNotFound, gin.H{"error": "Test not found"})
-		return
-	}
-
-	context.JSON(http.StatusOK, existingTest)
+func GetRepo(dbOperations utils.DatabaseOperations, context *gin.Context) {
+	var existingRepo tables.Repo
+	utils.GetResource(dbOperations, context, &existingRepo, "id", "Repo")
 }

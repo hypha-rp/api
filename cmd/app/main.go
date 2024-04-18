@@ -4,7 +4,6 @@ import (
 	"flag"
 	"hypha/api/internal/config"
 	"hypha/api/internal/db"
-	"hypha/api/internal/db/tables"
 	"hypha/api/internal/http"
 	"log"
 
@@ -25,7 +24,7 @@ func main() {
 		log.Fatal("Could not connect to database: ", err)
 	}
 
-	if err := db.AutoMigrate(dbConn, &tables.Product{}, &tables.Repo{}); err != nil {
+	if err := db.AutoMigrate(dbConn); err != nil {
 		log.Fatalf("Could not migrate tables: %v", err)
 	}
 
@@ -33,5 +32,5 @@ func main() {
 	dbConnWrapper := &db.DBConnWrapper{DB: dbConn}
 	http.SetupRoutes(router, dbConnWrapper)
 
-	router.Run("localhost:5052")
+	router.Run("localhost:8000")
 }

@@ -3,6 +3,7 @@ package db
 import (
 	"fmt"
 	"hypha/api/internal/config"
+	"hypha/api/internal/db/tables"
 
 	"github.com/go-orm/gorm"
 	_ "github.com/go-orm/gorm/dialects/postgres"
@@ -34,15 +35,24 @@ func Connect(cfg *config.Config) (*gorm.DB, error) {
 	return DBConn, nil
 }
 
-func AutoMigrate(dbConn *gorm.DB, tables ...interface{}) error {
-	for _, table := range tables {
-		if err := dbConn.AutoMigrate(table).Error; err != nil {
+var tables_slice = []interface{}{
+	&tables.Product{},
+	&tables.Repo{},
+	&tables.ProductsRepo{},
+	&tables.RepoConfig{},
+	&tables.RepoConfigRule{},
+	&tables.TestCaseResult{},
+	&tables.TestCaseFailure{},
+}
+
+func AutoMigrate(db *gorm.DB) error {
+	for _, table := range tables_slice {
+		if err := db.AutoMigrate(table).Error; err != nil {
 			return err
 		}
 	}
 	return nil
 }
-
 func (wrapper *DBConnWrapper) Create(record interface{}) error {
 	return wrapper.DB.Create(record).Error
 }

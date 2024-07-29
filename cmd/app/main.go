@@ -5,7 +5,8 @@ import (
 	"hypha/api/internal/config"
 	"hypha/api/internal/db"
 	"hypha/api/internal/http"
-	"log"
+
+	"github.com/rs/zerolog/log"
 
 	"github.com/gin-gonic/gin"
 )
@@ -16,21 +17,21 @@ func main() {
 
 	cfg, err := config.ReadConfig(*configPath)
 	if err != nil {
-		log.Fatal("Could not read config: ", err)
+		log.Fatal().Msgf("Could not read config: %v", err)
 	}
 
 	dbConn, err := db.Connect(cfg)
 	if err != nil {
-		log.Fatal("Could not connect to database: ", err)
+		log.Fatal().Msgf("Could not connect to database: %v", err)
 	}
 
 	if err := db.AutoMigrate(dbConn); err != nil {
-		log.Fatalf("Could not migrate tables: %v", err)
+		log.Fatal().Msgf("Could not migrate tables: %v", err)
 	}
 
 	router := gin.Default()
 	dbConnWrapper := &db.DBConnWrapper{DB: dbConn}
-	http.SetupRoutes(router, dbConnWrapper)
+	http.InitRoutes(router, dbConnWrapper)
 
-	router.Run("localhost:8000")
+	router.Run(":8081")
 }

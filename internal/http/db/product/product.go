@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupProductRoutes(router *gin.RouterGroup, dbOperations utils.DatabaseOperations) {
+func InitProductRoutes(router *gin.RouterGroup, dbOperations utils.DatabaseOperations) {
 	router.POST("/product", func(context *gin.Context) {
 		CreateProduct(dbOperations, context)
 	})

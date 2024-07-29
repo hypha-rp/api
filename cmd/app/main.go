@@ -5,11 +5,12 @@ import (
 	"hypha/api/internal/config"
 	"hypha/api/internal/db"
 	"hypha/api/internal/http"
-
-	"github.com/rs/zerolog/log"
+	"hypha/api/utils/logging"
 
 	"github.com/gin-gonic/gin"
 )
+
+var log = logging.Logger
 
 func main() {
 	configPath := flag.String("config", "config.yaml", "Path to configuration file")
@@ -29,7 +30,10 @@ func main() {
 		log.Fatal().Msgf("Could not migrate tables: %v", err)
 	}
 
-	router := gin.Default()
+	router := gin.New()
+	router.Use(gin.Recovery())
+	router.Use(logging.GinLogger())
+
 	dbConnWrapper := &db.DBConnWrapper{DB: dbConn}
 	http.InitRoutes(router, dbConnWrapper)
 

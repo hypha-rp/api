@@ -1,11 +1,13 @@
 package config
 
 import (
+	"hypha/api/utils/logging"
 	"os"
 
-	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v2"
 )
+
+var log = logging.Logger
 
 type Config struct {
 	Database struct {

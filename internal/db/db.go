@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"hypha/api/internal/config"
 	"hypha/api/internal/db/tables"
+	"hypha/api/utils/logging"
 
 	"github.com/go-orm/gorm"
 	_ "github.com/go-orm/gorm/dialects/postgres"
-	"github.com/rs/zerolog/log"
 )
 
+var log = logging.Logger
 var (
 	DBConn *gorm.DB
 )

@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  postgres-hypha:
+    image: postgres
+    container_name: postgres-hypha
+    environment:
+      POSTGRES_DB: hypha
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: mysecretpassword
+    ports:
+      - "5432:5432"
+    networks:
+      - hypha-network
+
+  hypha-api:
+    image: hyha-api:${TAG}
+    container_name: hypha-api
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./config.yaml:/config.yaml
+    command: sh -c "sleep 10 && hypha-api --config /config.yaml"
+    depends_on:
+      - postgres-hypha
+    networks:
+      - hypha-network
+
+networks:
+  hypha-network:
+    driver: bridge

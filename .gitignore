@@ -22,4 +22,4 @@ go.work
 
 # VS Code
 .vscode/*
-dev/
+#dev/

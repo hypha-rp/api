@@ -1,7 +1,7 @@
 package config
 
 import (
-	"hypha/api/utils/logging"
+	"hypha/api/internal/utils/logging"
 	"os"
 
 	"gopkg.in/yaml.v2"

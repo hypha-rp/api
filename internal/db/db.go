@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"hypha/api/internal/config"
 	"hypha/api/internal/db/tables"
-	"hypha/api/utils/logging"
+	"hypha/api/internal/utils/logging"
 
 	"github.com/go-orm/gorm"
 	_ "github.com/go-orm/gorm/dialects/postgres"
@@ -70,6 +70,10 @@ func AutoMigrate(db *gorm.DB) error {
 	}
 	log.Info().Msg("Database migration completed successfully")
 	return nil
+}
+
+func (wrapper *DBConnWrapper) Connection() *gorm.DB {
+	return wrapper.DB
 }
 
 func (wrapper *DBConnWrapper) Create(record interface{}) error {

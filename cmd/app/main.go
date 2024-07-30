@@ -5,7 +5,7 @@ import (
 	"hypha/api/internal/config"
 	"hypha/api/internal/db"
 	"hypha/api/internal/http"
-	"hypha/api/utils/logging"
+	"hypha/api/internal/utils/logging"
 
 	"github.com/gin-gonic/gin"
 )

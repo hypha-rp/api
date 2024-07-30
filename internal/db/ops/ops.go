@@ -1,12 +1,14 @@
-package utils
+package ops
 
 import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-orm/gorm"
 )
 
 type DatabaseOperations interface {
+	Connection() *gorm.DB
 	Create(value interface{}) error
 	First(out interface{}, where ...interface{}) error
 }

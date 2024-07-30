@@ -58,6 +58,10 @@ func Connect(cfg *config.Config) (*gorm.DB, error) {
 var tables_slice = []interface{}{
 	&tables.Product{},
 	&tables.Integration{},
+	&tables.Assembly{},
+	&tables.Collection{},
+	&tables.Test{},
+	&tables.Trait{},
 }
 
 func AutoMigrate(db *gorm.DB) error {

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<assemblies id="d3b07384-d9a1-4d3b-8a1d-9a1d4d3b0738">
+  <assembly id="a1d4d3b0-7384-4d3b-8a1d-9a1d4d3b0738" name="Example.Tests.dll" test-framework="xUnit.net 2.0" run-date="2023-10-01" run-time="12:00:00" total="5" passed="5" failed="0" skipped="0" time="0.123">
+    <collection id="b07384d3-9a1d-4d3b-8a1d-9a1d4d3b0738" total="5" passed="5" failed="0" skipped="0" name="Test collection">
+      <test id="c84d3b07-3a1d-4d3b-8a1d-9a1d4d3b0738" name="Example.Tests.TestClass.TestMethod1" type="Example.Tests.TestClass" method="TestMethod1" time="0.001" result="Pass">
+        <traits>
+          <trait name="hypha.integration" value="1" />
+        </traits>
+      </test>
+      <test id="d3b07384-9a1d-4d3b-8a1d-9a1d4d3b0738" name="Example.Tests.TestClass.TestMethod2" type="Example.Tests.TestClass" method="TestMethod2" time="0.001" result="Pass">
+        <traits>
+          <trait name="hypha.integration" value="1" />
+        </traits>
+      </test>
+      <test id="e4d3b073-9a1d-4d3b-8a1d-9a1d4d3b0738" name="Example.Tests.TestClass.TestMethod3" type="Example.Tests.TestClass" method="TestMethod3" time="0.001" result="Pass">
+        <traits>
+          <trait name="Category" value="Unit" />
+        </traits>
+      </test>
+      <test id="f3b07384-9a1d-4d3b-8a1d-9a1d4d3b0738" name="Example.Tests.TestClass.TestMethod4" type="Example.Tests.TestClass" method="TestMethod4" time="0.001" result="Pass">
+        <traits>
+          <trait name="Category" value="Integration" />
+        </traits>
+      </test>
+      <test id="g4d3b073-9a1d-4d3b-8a1d-9a1d4d3b0738" name="Example.Tests.TestClass.TestMethod5" type="Example.Tests.TestClass" method="TestMethod5" time="0.001" result="Pass">
+        <traits>
+          <trait name="Category" value="Unit" />
+        </traits>
+      </test>
+    </collection>
+  </assembly>
+</assemblies>

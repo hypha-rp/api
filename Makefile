@@ -8,7 +8,7 @@ build-image:
 demo:
 	[ "$(BUILD_DEMO)" = "true" ] && $(MAKE) build-image
 	$(CONTAINER_CMD) network create hypha-network
-	$(CONTAINER_CMD) run -d --name postgres-hypha --network hypha-network -e POSTGRES_DB=hypha -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=mysecretpassword postgres
+	$(CONTAINER_CMD) run -d --name postgres-hypha --network hypha-network -p 5432:5432 -e POSTGRES_DB=hypha -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=mysecretpassword postgres
 	sleep 10
 	$(CONTAINER_CMD) run -d --name hypha-api --network hypha-network -p 8081:8081 -v $(PWD)/dev/config.yaml:/config.yaml hyha-api:$(TAG) hypha-api --config /config.yaml
 

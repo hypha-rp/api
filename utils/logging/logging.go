@@ -32,10 +32,10 @@ func GinLogger() gin.HandlerFunc {
 
 		Logger.Info().
 			Int("status", statusCode).
+			Str("client_ip", clientIP).
+			Str("latency", latency.String()).
 			Str("method", method).
 			Str("path", path).
-			Str("client_ip", clientIP).
-			Dur("latency", latency).
 			Msg("REQUEST")
 	}
 }

@@ -2,12 +2,12 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"hypha/api/internal/config"
 	"hypha/api/internal/db"
 	"hypha/api/internal/http"
 	"hypha/api/internal/utils/logging"
-
-	"github.com/gin-gonic/gin"
+	"hypha/api/internal/utils/router"
 )
 
 var log = logging.Logger
@@ -30,12 +30,16 @@ func main() {
 		log.Fatal().Msgf("Could not migrate tables: %v", err)
 	}
 
-	router := gin.New()
-	router.Use(gin.Recovery())
-	router.Use(logging.GinLogger())
+	router, err := router.InitRouter(cfg)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to initialize router")
+	}
 
 	dbConnWrapper := &db.DBConnWrapper{DB: dbConn}
 	http.InitRoutes(router, dbConnWrapper)
 
-	router.Run(":8081")
+	port := cfg.Http.Port
+	if err := router.Run(fmt.Sprintf(":%d", port)); err != nil {
+		log.Fatal().Err(err).Msg("Failed to run server")
+	}
 }

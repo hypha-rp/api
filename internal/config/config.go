@@ -18,6 +18,17 @@ type Config struct {
 		Password string `yaml:"password"`
 		Sslmode  string `yaml:"sslmode"`
 	} `yaml:"database"`
+	Http struct {
+		Port       int `yaml:"port"`
+		CorsPolicy struct {
+			AllowOrigins     []string `yaml:"allow-origins"`
+			AllowMethods     []string `yaml:"allow-methods"`
+			AllowHeaders     []string `yaml:"allow-headers"`
+			ExposeHeaders    []string `yaml:"expose-headers"`
+			AllowCredentials bool     `yaml:"allow-credentials"`
+			MaxAge           int      `yaml:"max-age"`
+		} `yaml:"cors-policy"`
+	} `yaml:"http"`
 }
 
 func ReadConfig(filename string) (*Config, error) {

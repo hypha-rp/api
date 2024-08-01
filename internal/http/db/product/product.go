@@ -17,6 +17,9 @@ func InitProductRoutes(router *gin.RouterGroup, dbOperations ops.DatabaseOperati
 	router.GET("/product/:id/integrations", func(context *gin.Context) {
 		GetProductIntegrations(dbOperations, context)
 	})
+	router.GET("/products", func(context *gin.Context) {
+		GetAllProducts(dbOperations, context)
+	})
 }
 
 func CreateProduct(dbOperations ops.DatabaseOperations, context *gin.Context) {
@@ -37,4 +40,18 @@ func GetProductIntegrations(dbOperations ops.DatabaseOperations, context *gin.Co
 		return
 	}
 	context.JSON(200, integrations)
+}
+
+func GetAllProducts(dbOperations ops.DatabaseOperations, context *gin.Context) {
+	var products []tables.Product
+	name := context.Query("name")
+	query := dbOperations.Connection()
+	if name != "" {
+		query = query.Where("full_name ILIKE ?", "%"+name+"%")
+	}
+	if err := query.Find(&products).Error; err != nil {
+		context.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	context.JSON(200, products)
 }

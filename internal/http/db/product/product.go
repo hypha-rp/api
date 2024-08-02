@@ -24,6 +24,7 @@ func InitProductRoutes(router *gin.RouterGroup, dbOperations ops.DatabaseOperati
 
 func CreateProduct(dbOperations ops.DatabaseOperations, context *gin.Context) {
 	var newProduct tables.Product
+	newProduct.ID = ops.GenerateUniqueID()
 	ops.CreateResource(dbOperations, context, &newProduct)
 }
 
@@ -35,7 +36,11 @@ func GetProduct(dbOperations ops.DatabaseOperations, context *gin.Context) {
 func GetProductIntegrations(dbOperations ops.DatabaseOperations, context *gin.Context) {
 	var integrations []tables.Integration
 	productID := context.Param("id")
-	if err := dbOperations.Connection().Where("product_id1 = ? OR product_id2 = ?", productID, productID).Find(&integrations).Error; err != nil {
+	if err := dbOperations.Connection().
+		Where("product_id1 = ? OR product_id2 = ?", productID, productID).
+		Preload("Product1").
+		Preload("Product2").
+		Find(&integrations).Error; err != nil {
 		context.JSON(500, gin.H{"error": err.Error()})
 		return
 	}

@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-orm/gorm"
+	"github.com/google/uuid"
 )
 
 type DatabaseOperations interface {
@@ -36,4 +37,8 @@ func GetResource(dbOperations DatabaseOperations, context *gin.Context, resource
 	}
 
 	context.JSON(http.StatusOK, resource)
+}
+
+func GenerateUniqueID() string {
+	return uuid.New().String()
 }

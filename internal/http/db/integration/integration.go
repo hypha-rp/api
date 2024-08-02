@@ -17,11 +17,12 @@ func InitIntegrationRoutes(router *gin.RouterGroup, dbOperations ops.DatabaseOpe
 }
 
 func CreateIntegration(dbOperations ops.DatabaseOperations, context *gin.Context) {
-	var newProduct tables.Integration
-	ops.CreateResource(dbOperations, context, &newProduct)
+	var newIntegration tables.Integration
+	newIntegration.ID = ops.GenerateUniqueID()
+	ops.CreateResource(dbOperations, context, &newIntegration)
 }
 
 func GetIntegration(dbOperations ops.DatabaseOperations, context *gin.Context) {
-	var existingProduct tables.Integration
-	ops.GetResource(dbOperations, context, &existingProduct, "id", "Product")
+	var existingIntegration tables.Integration
+	ops.GetResource(dbOperations, context, &existingIntegration, "id", "Product")
 }

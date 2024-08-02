@@ -1,6 +1,6 @@
 module hypha/api
 
-go 1.21.9
+go 1.22
 
 require (
 	github.com/gin-gonic/gin v1.10.0
@@ -8,6 +8,8 @@ require (
 	github.com/rs/zerolog v1.33.0
 	gopkg.in/yaml.v2 v2.4.0
 )
+
+require github.com/kr/text v0.2.0 // indirect
 
 require (
 	github.com/bytedance/sonic v1.11.6 // indirect

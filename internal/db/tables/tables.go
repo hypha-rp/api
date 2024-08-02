@@ -5,7 +5,7 @@ import (
 )
 
 type Product struct {
-	gorm.Model
+	ID           string        `gorm:"type:uuid;primaryKey" json:"id"`
 	FullName     string        `json:"fullName"`
 	ShortName    string        `json:"shortName"`
 	ContactEmail string        `json:"contactEmail"`
@@ -13,9 +13,9 @@ type Product struct {
 }
 
 type Integration struct {
-	gorm.Model
-	ProductID1 uint    `json:"productID1"`
-	ProductID2 uint    `json:"productID2"`
+	ID         string  `gorm:"type:uuid;primaryKey" json:"id"`
+	ProductID1 string  `gorm:"type:uuid;" json:"productID1"`
+	ProductID2 string  `gorm:"type:uuid" json:"productID2"`
 	Product1   Product `gorm:"foreignKey:ProductID1"`
 	Product2   Product `gorm:"foreignKey:ProductID2"`
 }

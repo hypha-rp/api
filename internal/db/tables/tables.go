@@ -31,7 +31,7 @@ type Assembly struct {
 	Failed        int          `json:"failed"`
 	Skipped       int          `json:"skipped"`
 	Time          float64      `json:"time"`
-	ProductID     uint         `json:"productId"`
+	ProductID     string       `gorm:"column:product_id"`
 	Product       Product      `gorm:"foreignKey:ProductID"`
 	Collections   []Collection `gorm:"foreignKey:AssemblyID"`
 }

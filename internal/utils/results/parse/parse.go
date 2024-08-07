@@ -6,62 +6,63 @@ import (
 	"hypha/api/internal/utils/results/structs"
 )
 
-func ParseXUnitResults(assemblies structs.Assemblies, dbOperations ops.DatabaseOperations, productId string) error {
-	for _, assembly := range assemblies.Assemblies {
-		assemblyModel := tables.Assembly{
-			ID:            assembly.ID,
-			Name:          assembly.Name,
-			TestFramework: assembly.TestFramework,
-			RunDate:       assembly.RunDate,
-			RunTime:       assembly.RunTime,
-			Total:         assembly.Total,
-			Passed:        assembly.Passed,
-			Failed:        assembly.Failed,
-			Skipped:       assembly.Skipped,
-			Time:          assembly.Time,
-			ProductID:     productId,
+func ParseJUnitResults(testSuites structs.JUnitTestSuites, dbOperations ops.DatabaseOperations, productId string) error {
+	for _, suite := range testSuites.TestSuites {
+		resultModel := tables.Result{
+			ID:        ops.GenerateUniqueID(),
+			ProductID: productId,
 		}
-		if err := dbOperations.Create(&assemblyModel); err != nil {
+		if err := dbOperations.Create(&resultModel); err != nil {
 			return err
 		}
 
-		for _, collection := range assembly.Collections {
-			collectionModel := tables.Collection{
-				ID:         collection.ID,
-				AssemblyID: assemblyModel.ID,
-				Total:      collection.Total,
-				Passed:     collection.Passed,
-				Failed:     collection.Failed,
-				Skipped:    collection.Skipped,
-				Name:       collection.Name,
+		testSuiteModel := tables.TestSuite{
+			ID:       ops.GenerateUniqueID(),
+			ResultID: resultModel.ID,
+			Name:     suite.Name,
+			Tests:    suite.Tests,
+			Failures: suite.Failures,
+			Errors:   suite.Errors,
+			Skipped:  suite.Skipped,
+			Time:     suite.Time,
+		}
+		if err := dbOperations.Create(&testSuiteModel); err != nil {
+			return err
+		}
+
+		for _, property := range suite.Properties {
+			propertyModel := tables.Property{
+				ID:          ops.GenerateUniqueID(),
+				TestSuiteID: &testSuiteModel.ID,
+				Name:        property.Name,
+				Value:       property.Value,
 			}
-			if err := dbOperations.Create(&collectionModel); err != nil {
+			if err := dbOperations.Create(&propertyModel); err != nil {
+				return err
+			}
+		}
+
+		for _, testCase := range suite.TestCases {
+			testCaseModel := tables.TestCase{
+				ID:          ops.GenerateUniqueID(),
+				TestSuiteID: testSuiteModel.ID,
+				ClassName:   testCase.ClassName,
+				Name:        testCase.Name,
+				Time:        testCase.Time,
+			}
+			if err := dbOperations.Create(&testCaseModel); err != nil {
 				return err
 			}
 
-			for _, test := range collection.Tests {
-				testModel := tables.Test{
-					ID:           test.ID,
-					CollectionID: collectionModel.ID,
-					Name:         test.Name,
-					Type:         test.Type,
-					Method:       test.Method,
-					Time:         test.Time,
-					Result:       test.Result,
+			for _, property := range testCase.Properties {
+				propertyModel := tables.Property{
+					ID:         ops.GenerateUniqueID(),
+					TestCaseID: &testCaseModel.ID,
+					Name:       property.Name,
+					Value:      property.Value,
 				}
-				if err := dbOperations.Create(&testModel); err != nil {
+				if err := dbOperations.Create(&propertyModel); err != nil {
 					return err
-				}
-
-				for _, trait := range test.Traits {
-					traitModel := tables.Trait{
-						TestID: testModel.ID,
-						Name:   trait.Name,
-						Value:  trait.Value,
-					}
-					if err := dbOperations.Create(&traitModel); err != nil {
-						return err
-					}
 				}
 			}
 		}

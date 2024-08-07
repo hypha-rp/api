@@ -1,9 +1,5 @@
 package tables
 
-import (
-	"github.com/go-orm/gorm"
-)
-
 type Product struct {
 	ID           string        `gorm:"type:uuid;primaryKey" json:"id"`
 	FullName     string        `json:"fullName"`
@@ -20,47 +16,38 @@ type Integration struct {
 	Product2   Product `gorm:"foreignKey:ProductID2"`
 }
 
-type Assembly struct {
-	ID            string       `gorm:"primaryKey" json:"id"`
-	Name          string       `json:"name"`
-	TestFramework string       `json:"testFramework"`
-	RunDate       string       `json:"runDate"`
-	RunTime       string       `json:"runTime"`
-	Total         int          `json:"total"`
-	Passed        int          `json:"passed"`
-	Failed        int          `json:"failed"`
-	Skipped       int          `json:"skipped"`
-	Time          float64      `json:"time"`
-	ProductID     string       `gorm:"column:product_id"`
-	Product       Product      `gorm:"foreignKey:ProductID"`
-	Collections   []Collection `gorm:"foreignKey:AssemblyID"`
+type Result struct {
+	ID         string      `gorm:"type:uuid;primaryKey" json:"id"`
+	ProductID  string      `json:"productID"`
+	TestSuites []TestSuite `gorm:"foreignKey:ResultID"`
 }
 
-type Collection struct {
-	ID         string `gorm:"primaryKey" json:"id"`
-	AssemblyID string `json:"assemblyID"`
-	Total      int    `json:"total"`
-	Passed     int    `json:"passed"`
-	Failed     int    `json:"failed"`
-	Skipped    int    `json:"skipped"`
-	Name       string `json:"name"`
-	Tests      []Test `gorm:"foreignKey:CollectionID"`
+type TestSuite struct {
+	ID         string     `gorm:"type:uuid;primaryKey" json:"id"`
+	ResultID   string     `json:"resultID"`
+	Name       string     `json:"name"`
+	Tests      int        `json:"tests"`
+	Failures   int        `json:"failures"`
+	Errors     int        `json:"errors"`
+	Skipped    int        `json:"skipped"`
+	Time       float64    `json:"time"`
+	TestCases  []TestCase `gorm:"foreignKey:TestSuiteID"`
+	Properties []Property `gorm:"foreignKey:TestSuiteID"`
 }
 
-type Test struct {
-	ID           string  `gorm:"primaryKey" json:"id"`
-	CollectionID string  `json:"collectionID"`
-	Name         string  `json:"name"`
-	Type         string  `json:"type"`
-	Method       string  `json:"method"`
-	Time         float64 `json:"time"`
-	Result       string  `json:"result"`
-	Traits       []Trait `gorm:"foreignKey:TestID"`
+type TestCase struct {
+	ID          string     `gorm:"type:uuid;primaryKey" json:"id"`
+	TestSuiteID string     `json:"testSuiteID"`
+	ClassName   string     `json:"className"`
+	Name        string     `json:"name"`
+	Time        float64    `json:"time"`
+	Properties  []Property `gorm:"foreignKey:TestCaseID"`
 }
 
-type Trait struct {
-	gorm.Model
-	TestID string `json:"testID"`
-	Name   string `json:"name"`
-	Value  string `json:"value"`
+type Property struct {
+	ID          string  `gorm:"type:uuid;primaryKey" json:"id"`
+	TestSuiteID *string `json:"testSuiteID"`
+	TestCaseID  *string `json:"testCaseID"`
+	Name        string  `json:"name"`
+	Value       string  `json:"value"`
 }

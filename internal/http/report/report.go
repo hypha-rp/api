@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"hypha/api/internal/utils/results/conversion"
 	"hypha/api/internal/utils/results/parse"
 	"hypha/api/internal/utils/results/structs"
 
@@ -21,22 +20,17 @@ func InitReportRoutes(router *gin.RouterGroup, dbOperations ops.DatabaseOperatio
 }
 
 func ReportResults(c *gin.Context, dbOperations ops.DatabaseOperations) {
-	var assemblies structs.Assemblies
+	var junitTestSuites structs.JUnitTestSuites
 	var product tables.Product
 
-	if productId := c.PostForm("productId"); productId == "" {
+	productId := c.PostForm("productId")
+	if productId == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "productId is required"})
 		return
 	}
 
 	if dbOperations == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database operations not initialized"})
-		return
-	}
-
-	productId := c.PostForm("productId")
-	if productId == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "productId is required"})
 		return
 	}
 
@@ -64,32 +58,12 @@ func ReportResults(c *gin.Context, dbOperations ops.DatabaseOperations) {
 		return
 	}
 
-	if err := xml.Unmarshal(byteValue, &assemblies); err != nil {
-		var junitTestSuites structs.JUnitTestSuites
-		if err := xml.Unmarshal(byteValue, &junitTestSuites); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid XML format. Not XUnit or JUnit"})
-			return
-		}
-
-		xunitFile, err := conversion.ConvertJUnitToXUnit(file.Filename)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to convert JUnit to XUnit"})
-			return
-		}
-
-		byteValue, err = ioutil.ReadFile(xunitFile)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read converted XUnit file"})
-			return
-		}
-
-		if err := xml.Unmarshal(byteValue, &assemblies); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid XML format after conversion"})
-			return
-		}
+	if err := xml.Unmarshal(byteValue, &junitTestSuites); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid XML format. Not JUnit"})
+		return
 	}
 
-	if err := parse.ParseXUnitResults(assemblies, dbOperations, productId); err != nil {
+	if err := parse.ParseJUnitResults(junitTestSuites, dbOperations, productId); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

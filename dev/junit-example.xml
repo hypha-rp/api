@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testsuites>
-  <testsuite name="Example.Tests" tests="5" failures="0" errors="0" skipped="0" time="0.123">
+  <testsuite name="Example.Tests" tests="5" failures="1" errors="1" skipped="1" time="0.123">
     <properties>
-      <property name="hypha.integration" value="1"/>
     </properties>
     <testcase classname="Example.Tests.TestClass" name="TestMethod1" time="0.001">
       <properties>
@@ -13,16 +12,19 @@
       <properties>
         <property name="hypha.integration" value="1"/>
       </properties>
+      <failure message="Assertion failed">Expected true but was false</failure>
     </testcase>
     <testcase classname="Example.Tests.TestClass" name="TestMethod3" time="0.001">
       <properties>
         <property name="Category" value="Unit"/>
       </properties>
+      <skipped/>
     </testcase>
     <testcase classname="Example.Tests.TestClass" name="TestMethod4" time="0.001">
       <properties>
         <property name="Category" value="Integration"/>
       </properties>
+      <error message="Exception occurred">NullReferenceException</error>
     </testcase>
     <testcase classname="Example.Tests.TestClass" name="TestMethod5" time="0.001">
       <properties>

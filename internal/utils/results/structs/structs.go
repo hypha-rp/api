@@ -21,6 +21,10 @@ type JUnitTestCase struct {
 	ClassName  string     `xml:"classname,attr"`
 	Name       string     `xml:"name,attr"`
 	Time       float64    `xml:"time,attr"`
+	Status     string     `xml:"-"`
+	Failure    *string    `xml:"failure,omitempty"`
+	Error      *string    `xml:"error,omitempty"`
+	Skipped    *string    `xml:"skipped,omitempty"`
 	Properties []Property `xml:"properties>property"`
 }
 

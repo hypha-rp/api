@@ -1,5 +1,7 @@
 package tables
 
+import "time"
+
 type Product struct {
 	ID           string        `gorm:"type:uuid;primaryKey" json:"id"`
 	FullName     string        `json:"fullName"`
@@ -17,9 +19,10 @@ type Integration struct {
 }
 
 type Result struct {
-	ID         string      `gorm:"type:uuid;primaryKey" json:"id"`
-	ProductID  string      `json:"productID"`
-	TestSuites []TestSuite `gorm:"foreignKey:ResultID"`
+	ID           string      `gorm:"type:uuid;primaryKey" json:"id"`
+	ProductID    string      `json:"productID"`
+	TestSuites   []TestSuite `gorm:"foreignKey:ResultID"`
+	DateReported time.Time   `json:"dateReported"`
 }
 
 type TestSuite struct {
@@ -41,6 +44,8 @@ type TestCase struct {
 	ClassName   string     `json:"className"`
 	Name        string     `json:"name"`
 	Time        float64    `json:"time"`
+	Status      string     `json:"status"`
+	Message     *string    `json:"message"`
 	Properties  []Property `gorm:"foreignKey:TestCaseID"`
 }
 

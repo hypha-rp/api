@@ -4,13 +4,15 @@ import (
 	"hypha/api/internal/db/ops"
 	"hypha/api/internal/db/tables"
 	"hypha/api/internal/utils/results/structs"
+	"time"
 )
 
 func ParseJUnitResults(testSuites structs.JUnitTestSuites, dbOperations ops.DatabaseOperations, productId string) error {
 	for _, suite := range testSuites.TestSuites {
 		resultModel := tables.Result{
-			ID:        ops.GenerateUniqueID(),
-			ProductID: productId,
+			ID:           ops.GenerateUniqueID(),
+			ProductID:    productId,
+			DateReported: time.Now().UTC(),
 		}
 		if err := dbOperations.Create(&resultModel); err != nil {
 			return err
@@ -43,12 +45,26 @@ func ParseJUnitResults(testSuites structs.JUnitTestSuites, dbOperations ops.Data
 		}
 
 		for _, testCase := range suite.TestCases {
+			status := "pass"
+			message := ""
+			if testCase.Failure != nil {
+				status = "fail"
+				message = *testCase.Failure
+			} else if testCase.Error != nil {
+				status = "error"
+				message = *testCase.Error
+			} else if testCase.Skipped != nil {
+				status = "skipped"
+			}
+
 			testCaseModel := tables.TestCase{
 				ID:          ops.GenerateUniqueID(),
 				TestSuiteID: testSuiteModel.ID,
 				ClassName:   testCase.ClassName,
 				Name:        testCase.Name,
 				Time:        testCase.Time,
+				Status:      status,
+				Message:     &message,
 			}
 			if err := dbOperations.Create(&testCaseModel); err != nil {
 				return err

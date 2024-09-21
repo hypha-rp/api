@@ -25,6 +25,17 @@ services:
       - postgres-hypha
     networks:
       - hypha-network
+  
+  hypha-ui:
+    image: ghcr.io/hypha-rp/ui:latest
+    container_name: hypha-ui
+    ports:
+      - "8080:4200"
+    depends_on:
+      - postgres-hypha
+      - hypha-api
+    networks:
+      - hypha-network
 
 networks:
   hypha-network:

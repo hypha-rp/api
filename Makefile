@@ -6,8 +6,7 @@ build-image:
 demo: demo-down demo-up
 
 demo-up:
-	$(MAKE) build-image;
-	@TAG=$(TAG) docker-compose -f dev/docker-compose.yaml up -d --force-recreate;
+	@TAG=$(TAG) docker-compose -f dev/docker-compose.yaml up -d --force-recreate --build;
 
 demo-down:
 	docker-compose -f dev/docker-compose.yaml down

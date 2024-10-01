@@ -1,17 +1,21 @@
 package report
 
 import (
+	"bytes"
 	"encoding/xml"
 	"hypha/api/internal/db/ops"
 	"hypha/api/internal/db/tables"
 	"io/ioutil"
 	"net/http"
 
+	"hypha/api/internal/utils/logging"
 	"hypha/api/internal/utils/results/parse"
 	"hypha/api/internal/utils/results/structs"
 
 	"github.com/gin-gonic/gin"
 )
+
+var logger = logging.Logger
 
 func InitReportRoutes(router *gin.RouterGroup, dbOperations ops.DatabaseOperations) {
 	router.POST("/results", func(c *gin.Context) {
@@ -61,8 +65,13 @@ func ReportResults(c *gin.Context, dbOperations ops.DatabaseOperations) {
 		return
 	}
 
+	if !containsTestsuitesTag(byteValue) {
+		byteValue = wrapInTestsuitesTag(byteValue)
+	}
+
 	if err := xml.Unmarshal(byteValue, &junitTestSuites); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid XML format. Not JUnit"})
+		logger.Error().Err(err).Msg("Failed to unmarshal JUnit XML")
 		return
 	}
 
@@ -74,6 +83,14 @@ func ReportResults(c *gin.Context, dbOperations ops.DatabaseOperations) {
 	c.JSON(http.StatusOK, gin.H{"status": "success"})
 }
 
+func containsTestsuitesTag(xmlContent []byte) bool {
+	return bytes.Contains(xmlContent, []byte("<testsuites>"))
+}
+
+func wrapInTestsuitesTag(xmlContent []byte) []byte {
+	return append([]byte("<testsuites>"), append(xmlContent, []byte("</testsuites>")...)...)
+}
+
 func GetResultsByProductID(c *gin.Context, dbOperations ops.DatabaseOperations) {
 	productId := c.Param("productId")
 	if productId == "" {
@@ -83,8 +100,7 @@ func GetResultsByProductID(c *gin.Context, dbOperations ops.DatabaseOperations) 
 
 	var results []tables.Result
 
-	// Enable GORM debug mode to log SQL queries
-	db := dbOperations.Connection().Debug()
+	db := dbOperations.Connection()
 
 	if err := db.Where("product_id = ?", productId).
 		Preload("TestSuites").

@@ -33,9 +33,13 @@ type TestSuite struct {
 	Failures   int        `json:"failures"`
 	Errors     int        `json:"errors"`
 	Skipped    int        `json:"skipped"`
+	Assertions int        `json:"assertions"`
 	Time       float64    `json:"time"`
+	File       string     `json:"file"`
 	TestCases  []TestCase `gorm:"foreignKey:TestSuiteID"`
 	Properties []Property `gorm:"foreignKey:TestSuiteID"`
+	SystemOut  string     `json:"systemOut"`
+	SystemErr  string     `json:"systemErr"`
 }
 
 type TestCase struct {
@@ -46,7 +50,13 @@ type TestCase struct {
 	Time        float64    `json:"time"`
 	Status      string     `json:"status"`
 	Message     *string    `json:"message"`
+	Type        *string    `json:"type"`
+	Assertions  int        `json:"assertions"`
+	File        string     `json:"file"`
+	Line        int        `json:"line"`
 	Properties  []Property `gorm:"foreignKey:TestCaseID"`
+	SystemOut   string     `json:"systemOut"`
+	SystemErr   string     `json:"systemErr"`
 }
 
 type Property struct {

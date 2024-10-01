@@ -19,14 +19,18 @@ func ParseJUnitResults(testSuites structs.JUnitTestSuites, dbOperations ops.Data
 		}
 
 		testSuiteModel := tables.TestSuite{
-			ID:       ops.GenerateUniqueID(),
-			ResultID: resultModel.ID,
-			Name:     suite.Name,
-			Tests:    suite.Tests,
-			Failures: suite.Failures,
-			Errors:   suite.Errors,
-			Skipped:  suite.Skipped,
-			Time:     suite.Time,
+			ID:         ops.GenerateUniqueID(),
+			ResultID:   resultModel.ID,
+			Name:       suite.Name,
+			Tests:      suite.Tests,
+			Failures:   suite.Failures,
+			Errors:     suite.Errors,
+			Skipped:    suite.Skipped,
+			Assertions: suite.Assertions,
+			Time:       suite.Time,
+			File:       suite.File,
+			SystemOut:  suite.SystemOut,
+			SystemErr:  suite.SystemErr,
 		}
 		if err := dbOperations.Create(&testSuiteModel); err != nil {
 			return err
@@ -46,15 +50,21 @@ func ParseJUnitResults(testSuites structs.JUnitTestSuites, dbOperations ops.Data
 
 		for _, testCase := range suite.TestCases {
 			status := "pass"
-			message := ""
+			var message *string
+			var testCaseType *string
+
 			if testCase.Failure != nil {
 				status = "fail"
-				message = *testCase.Failure
+				message = &testCase.Failure.Message
+				testCaseType = &testCase.Failure.Type
 			} else if testCase.Error != nil {
 				status = "error"
-				message = *testCase.Error
+				message = &testCase.Error.Message
+				testCaseType = &testCase.Error.Type
 			} else if testCase.Skipped != nil {
 				status = "skipped"
+				message = &testCase.Skipped.Message
+				testCaseType = nil
 			}
 
 			testCaseModel := tables.TestCase{
@@ -64,7 +74,13 @@ func ParseJUnitResults(testSuites structs.JUnitTestSuites, dbOperations ops.Data
 				Name:        testCase.Name,
 				Time:        testCase.Time,
 				Status:      status,
-				Message:     &message,
+				Message:     message,
+				Type:        testCaseType,
+				Assertions:  testCase.Assertions,
+				File:        testCase.File,
+				Line:        testCase.Line,
+				SystemOut:   testCase.SystemOut,
+				SystemErr:   testCase.SystemErr,
 			}
 			if err := dbOperations.Create(&testCaseModel); err != nil {
 				return err

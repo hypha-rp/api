@@ -84,7 +84,7 @@ func ReportResults(c *gin.Context, dbOperations ops.DatabaseOperations) {
 }
 
 func containsTestsuitesTag(xmlContent []byte) bool {
-	return bytes.Contains(xmlContent, []byte("<testsuites>"))
+	return bytes.Contains(xmlContent, []byte("<testsuites"))
 }
 
 func wrapInTestsuitesTag(xmlContent []byte) []byte {

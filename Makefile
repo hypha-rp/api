@@ -15,6 +15,6 @@ report-results:
 ifndef PRODUCT_ID
 	$(error PRODUCT_ID is not set)
 endif
-	curl -X POST http://louseal:8081/report/results \
+	curl -X POST http://localhost:8081/report/results \
 		-F "productId=$(PRODUCT_ID)" \
 		-F "file=@./dev/junit-example.xml"

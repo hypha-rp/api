@@ -24,5 +24,13 @@ func CreateIntegration(dbOperations ops.DatabaseOperations, context *gin.Context
 
 func GetIntegration(dbOperations ops.DatabaseOperations, context *gin.Context) {
 	var existingIntegration tables.Integration
-	ops.GetResource(dbOperations, context, &existingIntegration, "id", "Product")
+	if err := dbOperations.Connection().
+		Preload("Product1").
+		Preload("Product2").
+		Where("id = ?", context.Param("id")).
+		First(&existingIntegration).Error; err != nil {
+		context.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	context.JSON(200, existingIntegration)
 }

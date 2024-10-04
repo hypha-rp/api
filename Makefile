@@ -1,20 +1,20 @@
 TAG ?= latest
 
 build-image:
-	docker build -t hyha-api:$(TAG) .
+	docker build --no-cache -t hypha-api:$(TAG) .
 
-demo: demo-down demo-up
+#######################################
+### Development Environment Targets ###
+#######################################
 
-demo-up:
-	@TAG=$(TAG) docker-compose -f dev/docker-compose.yaml up -d --force-recreate --build;
+dev-up: build-image
+	@TAG=$(TAG) docker-compose -f dev/docker-compose.yaml up -d --force-recreate;
 
-demo-down:
+dev-down:
 	docker-compose -f dev/docker-compose.yaml down
 
-report-results:
-ifndef PRODUCT_ID
-	$(error PRODUCT_ID is not set)
-endif
-	curl -X POST http://localhost:8081/report/results \
-		-F "productId=$(PRODUCT_ID)" \
-		-F "file=@./dev/junit-example.xml"
+dev-test: dev-down dev-up dev-product-create-and-report
+
+dev-product-create-and-report:
+	sleep 10
+	./dev/scripts/create-product-report-results.sh

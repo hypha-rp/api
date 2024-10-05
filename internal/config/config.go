@@ -17,6 +17,7 @@ type Config struct {
 		Dbname   string `yaml:"dbname"`
 		Password string `yaml:"password"`
 		Sslmode  string `yaml:"sslmode"`
+		Debug    bool   `yaml:"debug"`
 	} `yaml:"database"`
 	Http struct {
 		Port       int `yaml:"port"`
@@ -48,6 +49,10 @@ func ReadConfig(filename string) (*Config, error) {
 		return nil, err
 	}
 	log.Info().Msgf("Successfully unmarshalled YAML from file: %s", filename)
+
+	if !cfg.Database.Debug {
+		cfg.Database.Debug = false
+	}
 
 	return &cfg, nil
 }

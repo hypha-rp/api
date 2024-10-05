@@ -5,6 +5,7 @@ database:
   dbname: hypha
   password: mysecretpassword
   sslmode: disable
+  debug: false
 http:
   port: 8081
   cors-policy:

@@ -51,7 +51,11 @@ func Connect(cfg *config.Config) (*gorm.DB, error) {
 		Str("dbname", cfg.Database.Dbname).
 		Msg("Successfully connected to the database")
 
-	DBConn = db
+	if cfg.Database.Debug {
+		DBConn = db.Debug()
+	} else {
+		DBConn = db
+	}
 	return DBConn, nil
 }
 

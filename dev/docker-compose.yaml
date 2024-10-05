@@ -17,6 +17,7 @@ services:
     build:
       context: ..
       dockerfile: Dockerfile
+    image: hypha-api:${TAG:-latest}
     container_name: hypha-api
     ports:
       - "8081:8081"

@@ -8,11 +8,21 @@ import (
 	"github.com/go-orm/gorm"
 )
 
+// logErrorAndRespond logs an error message and sends a JSON response with an internal server error status.
+// Parameters:
+// - context: The Gin context to use for sending the response.
+// - message: The error message to log.
+// - err: The error to log.
 func logErrorAndRespond(context *gin.Context, message string, err error) {
 	log.Error().Msgf("%s: %v", message, err)
 	context.JSON(http.StatusInternalServerError, gin.H{"error": "There was a problem processing your request"})
 }
 
+// createResultMap creates a map of result IDs to their corresponding test suites.
+// Parameters:
+// - testSuites: A slice of TestSuite objects.
+// Returns:
+// - A map where the keys are result IDs and the values are slices of TestSuite objects.
 func createResultMap(testSuites []tables.TestSuite) map[string][]tables.TestSuite {
 	resultMap := make(map[string][]tables.TestSuite)
 	for _, testSuite := range testSuites {
@@ -22,6 +32,13 @@ func createResultMap(testSuites []tables.TestSuite) map[string][]tables.TestSuit
 	return resultMap
 }
 
+// fetchResultsAndProducts fetches results and their associated products from the database.
+// Parameters:
+// - db: The GORM database connection.
+// - resultMap: A map of result IDs to their corresponding test suites.
+// Returns:
+// - A slice of Gin H maps containing result and product information.
+// - An error if any database operation fails.
 func fetchResultsAndProducts(db *gorm.DB, resultMap map[string][]tables.TestSuite) ([]gin.H, error) {
 	var results []gin.H
 	for resultID, testSuites := range resultMap {
@@ -49,6 +66,14 @@ func fetchResultsAndProducts(db *gorm.DB, resultMap map[string][]tables.TestSuit
 	return results, nil
 }
 
+// getTestSuiteAndCaseIDs retrieves test suite and test case IDs associated with a given integration ID.
+// Parameters:
+// - db: The GORM database connection.
+// - integrationID: The integration ID to filter by.
+// Returns:
+// - A slice of test suite IDs.
+// - A slice of test case IDs.
+// - An error if any database operation fails.
 func getTestSuiteAndCaseIDs(db *gorm.DB, integrationID string) ([]string, []string, error) {
 	var testSuiteIDs []string
 	var testCaseIDs []string
@@ -74,6 +99,14 @@ func getTestSuiteAndCaseIDs(db *gorm.DB, integrationID string) ([]string, []stri
 	return testSuiteIDs, testCaseIDs, nil
 }
 
+// getTestSuites retrieves test suites and their associated test cases and properties from the database.
+// Parameters:
+// - db: The GORM database connection.
+// - testSuiteIDs: A slice of test suite IDs to filter by.
+// - testCaseIDs: A slice of test case IDs to filter by.
+// Returns:
+// - A slice of TestSuite objects.
+// - An error if any database operation fails.
 func getTestSuites(db *gorm.DB, testSuiteIDs, testCaseIDs []string) ([]tables.TestSuite, error) {
 	var testSuites []tables.TestSuite
 
@@ -84,28 +117,19 @@ func getTestSuites(db *gorm.DB, testSuiteIDs, testCaseIDs []string) ([]tables.Te
 		Find(&testSuites).Error
 
 	if err != nil {
-		log.Error().Msgf("Database query error in getTestSuites: %v", err)
 		return nil, err
 	}
 
 	return testSuites, nil
 }
 
+// filterTestCases filters test cases within test suites based on the integration ID.
+// Parameters:
+// - testSuites: A slice of TestSuite objects to filter.
+// - integrationID: The integration ID to filter by.
 func filterTestCases(testSuites []tables.TestSuite, integrationID string) {
 	for i := range testSuites {
-		integrationAtSuiteLevel := false
-		for _, property := range testSuites[i].Properties {
-			if property.Name == "hypha.integration" && property.Value == integrationID {
-				integrationAtSuiteLevel = true
-				break
-			}
-		}
-
-		if integrationAtSuiteLevel {
-			continue
-		}
-
-		filteredTestCases := []tables.TestCase{}
+		var filteredTestCases []tables.TestCase
 		for _, testCase := range testSuites[i].TestCases {
 			for _, property := range testCase.Properties {
 				if property.Name == "hypha.integration" && property.Value == integrationID {

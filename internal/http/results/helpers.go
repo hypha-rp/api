@@ -2,9 +2,52 @@ package results
 
 import (
 	"hypha/api/internal/db/tables"
+	"net/http"
 
+	"github.com/gin-gonic/gin"
 	"github.com/go-orm/gorm"
 )
+
+func logErrorAndRespond(context *gin.Context, message string, err error) {
+	log.Error().Msgf("%s: %v", message, err)
+	context.JSON(http.StatusInternalServerError, gin.H{"error": "There was a problem processing your request"})
+}
+
+func createResultMap(testSuites []tables.TestSuite) map[string][]tables.TestSuite {
+	resultMap := make(map[string][]tables.TestSuite)
+	for _, testSuite := range testSuites {
+		resultID := testSuite.ResultID
+		resultMap[resultID] = append(resultMap[resultID], testSuite)
+	}
+	return resultMap
+}
+
+func fetchResultsAndProducts(db *gorm.DB, resultMap map[string][]tables.TestSuite) ([]gin.H, error) {
+	var results []gin.H
+	for resultID, testSuites := range resultMap {
+		var result tables.Result
+		err := db.Where("id = ?", resultID).First(&result).Error
+		if err != nil {
+			return nil, err
+		}
+		result.TestSuites = testSuites
+
+		var product tables.Product
+		err = db.Where("id = ?", result.ProductID).First(&product).Error
+		if err != nil {
+			return nil, err
+		}
+
+		results = append(results, gin.H{
+			"id":           result.ID,
+			"productID":    result.ProductID,
+			"productName":  product.FullName,
+			"TestSuites":   result.TestSuites,
+			"dateReported": result.DateReported,
+		})
+	}
+	return results, nil
+}
 
 func getTestSuiteAndCaseIDs(db *gorm.DB, integrationID string) ([]string, []string, error) {
 	var testSuiteIDs []string

@@ -27,8 +27,7 @@ func GetResultsByIntegrationID(dbOperations ops.DatabaseOperations, context *gin
 
 	testSuiteIDs, testCaseIDs, err := getTestSuiteAndCaseIDs(db, integrationID)
 	if err != nil {
-		log.Error().Msgf("Database query error in getTestSuiteAndCaseIDs: %v", err)
-		context.JSON(http.StatusInternalServerError, gin.H{"error": "There was a problem processing your request"})
+		logErrorAndRespond(context, "Database query error in getTestSuiteAndCaseIDs", err)
 		return
 	}
 
@@ -39,12 +38,19 @@ func GetResultsByIntegrationID(dbOperations ops.DatabaseOperations, context *gin
 
 	testSuites, err := getTestSuites(db, testSuiteIDs, testCaseIDs)
 	if err != nil {
-		log.Error().Msgf("Database query error in getTestSuites: %v", err)
-		context.JSON(http.StatusInternalServerError, gin.H{"error": "There was a problem processing your request"})
+		logErrorAndRespond(context, "Database query error in getTestSuites", err)
 		return
 	}
 
 	filterTestCases(testSuites, integrationID)
 
-	context.JSON(http.StatusOK, testSuites)
+	resultMap := createResultMap(testSuites)
+
+	results, err := fetchResultsAndProducts(db, resultMap)
+	if err != nil {
+		logErrorAndRespond(context, "Database query error in fetchResultsAndProducts", err)
+		return
+	}
+
+	context.JSON(http.StatusOK, results)
 }

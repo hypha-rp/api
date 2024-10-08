@@ -2,6 +2,7 @@ package results
 
 import (
 	"hypha/api/internal/db/ops"
+	"hypha/api/internal/db/tables"
 	"hypha/api/internal/utils/logging"
 	"net/http"
 
@@ -10,12 +11,28 @@ import (
 
 var log = logging.Logger
 
+// InitResultsRoutes initializes the results routes for the given router group.
+// It sets up the GET routes for retrieving results by integration ID and product ID.
+//
+// Parameters:
+// - router: The router group to which the routes will be added.
+// - dbOperations: The database operations interface for interacting with the database.
 func InitResultsRoutes(router *gin.RouterGroup, dbOperations ops.DatabaseOperations) {
 	router.GET("/results/integration/:id", func(context *gin.Context) {
 		GetResultsByIntegrationID(dbOperations, context)
 	})
+	router.GET("/results/product/:productId", func(c *gin.Context) {
+		GetResultsByProductID(c, dbOperations)
+	})
 }
 
+// GetResultsByIntegrationID retrieves test results based on the integration ID.
+// It fetches the test suite and test case IDs, retrieves the test suites, filters the test cases,
+// and fetches the results and associated products from the database.
+//
+// Parameters:
+// - dbOperations: The database operations interface for interacting with the database.
+// - context: The Gin context for the current request.
 func GetResultsByIntegrationID(dbOperations ops.DatabaseOperations, context *gin.Context) {
 	integrationID := context.Param("id")
 	if integrationID == "" {
@@ -53,4 +70,34 @@ func GetResultsByIntegrationID(dbOperations ops.DatabaseOperations, context *gin
 	}
 
 	context.JSON(http.StatusOK, results)
+}
+
+// GetResultsByProductID retrieves test results based on the product ID.
+// It fetches the results and associated test suites, test cases, and properties from the database.
+//
+// Parameters:
+// - c: The Gin context for the current request.
+// - dbOperations: The database operations interface for interacting with the database.
+func GetResultsByProductID(c *gin.Context, dbOperations ops.DatabaseOperations) {
+	productId := c.Param("productId")
+	if productId == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "productId is required"})
+		return
+	}
+
+	var results []tables.Result
+
+	db := dbOperations.Connection()
+
+	if err := db.Where("product_id = ?", productId).
+		Preload("TestSuites").
+		Preload("TestSuites.TestCases").
+		Preload("TestSuites.Properties").
+		Preload("TestSuites.TestCases.Properties").
+		Find(&results).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve results"})
+		return
+	}
+
+	c.JSON(http.StatusOK, results)
 }

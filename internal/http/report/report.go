@@ -1,7 +1,6 @@
 package report
 
 import (
-	"bytes"
 	"encoding/xml"
 	"hypha/api/internal/db/ops"
 	"hypha/api/internal/db/tables"
@@ -17,15 +16,24 @@ import (
 
 var logger = logging.Logger
 
+// InitReportRoutes initializes the report routes for the given router group.
+// It sets up the POST route for reporting results.
+//
+// Parameters:
+// - router: The router group to which the routes will be added.
+// - dbOperations: The database operations interface for interacting with the database.
 func InitReportRoutes(router *gin.RouterGroup, dbOperations ops.DatabaseOperations) {
 	router.POST("/results", func(c *gin.Context) {
 		ReportResults(c, dbOperations)
 	})
-	router.GET("/results/:productId", func(c *gin.Context) {
-		GetResultsByProductID(c, dbOperations)
-	})
 }
 
+// ReportResults handles the reporting of test results.
+// It processes the uploaded JUnit XML file, parses the results, and stores them in the database.
+//
+// Parameters:
+// - c: The Gin context for the current request.
+// - dbOperations: The database operations interface for interacting with the database.
 func ReportResults(c *gin.Context, dbOperations ops.DatabaseOperations) {
 	var junitTestSuites structs.JUnitTestSuites
 	var product tables.Product
@@ -81,36 +89,4 @@ func ReportResults(c *gin.Context, dbOperations ops.DatabaseOperations) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "success"})
-}
-
-func containsTestsuitesTag(xmlContent []byte) bool {
-	return bytes.Contains(xmlContent, []byte("<testsuites"))
-}
-
-func wrapInTestsuitesTag(xmlContent []byte) []byte {
-	return append([]byte("<testsuites>"), append(xmlContent, []byte("</testsuites>")...)...)
-}
-
-func GetResultsByProductID(c *gin.Context, dbOperations ops.DatabaseOperations) {
-	productId := c.Param("productId")
-	if productId == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "productId is required"})
-		return
-	}
-
-	var results []tables.Result
-
-	db := dbOperations.Connection()
-
-	if err := db.Where("product_id = ?", productId).
-		Preload("TestSuites").
-		Preload("TestSuites.TestCases").
-		Preload("TestSuites.Properties").
-		Preload("TestSuites.TestCases.Properties").
-		Find(&results).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve results"})
-		return
-	}
-
-	c.JSON(http.StatusOK, results)
 }

@@ -78,6 +78,7 @@ func getTestSuiteAndCaseIDs(db *gorm.DB, integrationID string) ([]string, []stri
 	var testSuiteIDs []string
 	var testCaseIDs []string
 
+	// Retrieve test suite IDs associated with the integration ID
 	err := db.Table("properties").
 		Where("properties.name = ? AND properties.value::text = ? AND properties.test_suite_id IS NOT NULL", "hypha.integration", integrationID).
 		Pluck("test_suite_id::text", &testSuiteIDs).Error
@@ -87,6 +88,7 @@ func getTestSuiteAndCaseIDs(db *gorm.DB, integrationID string) ([]string, []stri
 		return nil, nil, err
 	}
 
+	// Retrieve test case IDs associated with the integration ID
 	err = db.Table("properties").
 		Where("properties.name = ? AND properties.value::text = ? AND properties.test_case_id IS NOT NULL", "hypha.integration", integrationID).
 		Pluck("test_case_id::text", &testCaseIDs).Error
@@ -96,6 +98,7 @@ func getTestSuiteAndCaseIDs(db *gorm.DB, integrationID string) ([]string, []stri
 		return nil, nil, err
 	}
 
+	// If integration is at the suite level, retrieve test case IDs for those suites
 	if len(testSuiteIDs) > 0 {
 		err = db.Table("test_cases").
 			Where("test_suite_id IN (?)", testSuiteIDs).
@@ -107,6 +110,7 @@ func getTestSuiteAndCaseIDs(db *gorm.DB, integrationID string) ([]string, []stri
 		}
 	}
 
+	// Retrieve test case IDs associated with the test suites where the hypha.integration property matches the integration ID
 	if len(testSuiteIDs) > 0 {
 		err = db.Table("properties").
 			Where("properties.name = ? AND properties.value::text = ? AND properties.test_suite_id IN (?) AND properties.test_case_id IS NOT NULL", "hypha.integration", integrationID, testSuiteIDs).
@@ -152,12 +156,25 @@ func getTestSuites(db *gorm.DB, testSuiteIDs, testCaseIDs []string) ([]tables.Te
 func filterTestCases(testSuites []tables.TestSuite, integrationID string) {
 	for i := range testSuites {
 		var filteredTestCases []tables.TestCase
+		suiteHasIntegration := false
+
+		for _, property := range testSuites[i].Properties {
+			if property.Name == "hypha.integration" && property.Value == integrationID {
+				suiteHasIntegration = true
+				break
+			}
+		}
+
 		for _, testCase := range testSuites[i].TestCases {
+			caseHasIntegration := false
 			for _, property := range testCase.Properties {
 				if property.Name == "hypha.integration" && property.Value == integrationID {
-					filteredTestCases = append(filteredTestCases, testCase)
+					caseHasIntegration = true
 					break
 				}
+			}
+			if caseHasIntegration || suiteHasIntegration {
+				filteredTestCases = append(filteredTestCases, testCase)
 			}
 		}
 		testSuites[i].TestCases = filteredTestCases

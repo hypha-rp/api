@@ -10,19 +10,34 @@ import (
 
 // trimLeadingWhitespace removes the leading whitespace from each line of the input text.
 // It calculates the minimum indentation level across all lines and removes that amount
-// of leading whitespace from each line, preserving any additional whitespace.
+// of leading whitespace from each line, preserving any additional whitespace. It also
+// removes leading and trailing blank lines.
 //
 // Parameters:
 // - text: The input text with potential leading whitespace.
 //
 // Returns:
-//   - A string with the leading whitespace removed from each line based on the minimum
-//     indentation level.
+//   - string: A string with the leading whitespace removed from each line based on the minimum
+//     indentation level, and with leading and trailing blank lines removed.
 func trimLeadingWhitespace(text string) string {
 	lines := strings.Split(text, "\n")
 	if len(lines) == 0 {
 		return text
 	}
+
+	// Remove leading and trailing blank lines
+	start := 0
+	for start < len(lines) && strings.TrimSpace(lines[start]) == "" {
+		start++
+	}
+	end := len(lines) - 1
+	for end >= 0 && strings.TrimSpace(lines[end]) == "" {
+		end--
+	}
+	if start > end {
+		return ""
+	}
+	lines = lines[start : end+1]
 
 	minIndent := -1
 	for _, line := range lines {

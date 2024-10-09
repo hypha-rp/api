@@ -96,6 +96,28 @@ func getTestSuiteAndCaseIDs(db *gorm.DB, integrationID string) ([]string, []stri
 		return nil, nil, err
 	}
 
+	if len(testSuiteIDs) > 0 {
+		err = db.Table("test_cases").
+			Where("test_suite_id IN (?)", testSuiteIDs).
+			Pluck("id::text", &testCaseIDs).Error
+
+		if err != nil {
+			log.Error().Msgf("Database query error in getTestSuiteAndCaseIDs (test_cases for suites): %v", err)
+			return nil, nil, err
+		}
+	}
+
+	if len(testSuiteIDs) > 0 {
+		err = db.Table("properties").
+			Where("properties.name = ? AND properties.value::text = ? AND properties.test_suite_id IN (?) AND properties.test_case_id IS NOT NULL", "hypha.integration", integrationID, testSuiteIDs).
+			Pluck("test_case_id::text", &testCaseIDs).Error
+
+		if err != nil {
+			log.Error().Msgf("Database query error in getTestSuiteAndCaseIDs (test_case_ids for suites): %v", err)
+			return nil, nil, err
+		}
+	}
+
 	return testSuiteIDs, testCaseIDs, nil
 }
 

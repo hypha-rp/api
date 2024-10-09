@@ -37,11 +37,15 @@ func ParseJUnitResults(testSuites structs.JUnitTestSuites, dbOperations ops.Data
 		}
 
 		for _, property := range suite.Properties {
+			value := property.Value
+			if value == "" {
+				value = property.Text
+			}
 			propertyModel := tables.Property{
 				ID:          ops.GenerateUniqueID(),
 				TestSuiteID: &testSuiteModel.ID,
 				Name:        property.Name,
-				Value:       property.Value,
+				Value:       value,
 			}
 			if err := dbOperations.Create(&propertyModel); err != nil {
 				return err
@@ -87,11 +91,15 @@ func ParseJUnitResults(testSuites structs.JUnitTestSuites, dbOperations ops.Data
 			}
 
 			for _, property := range testCase.Properties {
+				value := property.Value
+				if value == "" {
+					value = property.Text
+				}
 				propertyModel := tables.Property{
 					ID:         ops.GenerateUniqueID(),
 					TestCaseID: &testCaseModel.ID,
 					Name:       property.Name,
-					Value:      property.Value,
+					Value:      value,
 				}
 				if err := dbOperations.Create(&propertyModel); err != nil {
 					return err

@@ -61,5 +61,6 @@ type Skipped struct {
 
 type Property struct {
 	Name  string `xml:"name,attr"`
-	Value string `xml:"value,attr"`
+	Value string `xml:"value,attr,omitempty"`
+	Text  string `xml:",chardata"`
 }

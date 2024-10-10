@@ -1,0 +1,14 @@
+# Directories
+dev
+.github
+.vscode
+
+# Files
+.gitignore
+.goreleaser.yml
+LICENSE
+Makefile
+Dockerfile
+
+# Extensions
+*.md

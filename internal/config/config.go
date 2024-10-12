@@ -4,7 +4,7 @@ import (
 	"hypha/api/internal/utils/logging"
 	"os"
 
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 var log = logging.Logger

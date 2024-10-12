@@ -6,7 +6,6 @@ require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-orm/gorm v0.0.0-20161201081620-eb06255b667d
 	github.com/rs/zerolog v1.33.0
-	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 

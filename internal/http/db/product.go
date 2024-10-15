@@ -51,7 +51,7 @@ func GetAllProducts(dbOperations db.DatabaseOperations, context *gin.Context) {
 	name := context.Query("name")
 	query := dbOperations.Connection()
 	if name != "" {
-		query = query.Where("full_name ILIKE ?", "%"+name+"%")
+		query = query.Where("full_name ILIKE ? OR short_name ILIKE ?", "%"+name+"%", "%"+name+"%")
 	}
 	if err := query.Find(&products).Error; err != nil {
 		context.JSON(500, gin.H{"error": err.Error()})

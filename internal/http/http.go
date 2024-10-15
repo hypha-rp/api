@@ -1,9 +1,8 @@
 package http
 
 import (
-	"hypha/api/internal/db/ops"
-	"hypha/api/internal/http/db/integration"
-	"hypha/api/internal/http/db/product"
+	"hypha/api/internal/db"
+	db_group "hypha/api/internal/http/db"
 	"hypha/api/internal/http/report"
 	"hypha/api/internal/http/results"
 	"hypha/api/internal/utils/logging"
@@ -13,13 +12,15 @@ import (
 
 var log = logging.Logger
 
-func InitRoutes(router *gin.Engine, dbOperations ops.DatabaseOperations) {
+func InitRoutes(router *gin.Engine, dbOperations db.DatabaseOperations) {
 	log.Info().Msg("Initializing routes")
 
 	dbGroup := router.Group("/db")
-	product.InitProductRoutes(dbGroup, dbOperations)
-	integration.InitIntegrationRoutes(dbGroup, dbOperations)
-	results.InitResultsRoutes(dbGroup, dbOperations)
+	db_group.InitProductRoutes(dbGroup, dbOperations)
+	db_group.InitIntegrationRoutes(dbGroup, dbOperations)
+
+	resultsGroup := router.Group("/results")
+	results.InitResultsRoutes(resultsGroup, dbOperations)
 
 	reportGroup := router.Group("/report")
 	report.InitReportRoutes(reportGroup, dbOperations)

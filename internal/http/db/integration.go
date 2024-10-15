@@ -1,13 +1,12 @@
-package integration
+package db
 
 import (
-	"hypha/api/internal/db/ops"
-	"hypha/api/internal/db/tables"
+	"hypha/api/internal/db"
 
 	"github.com/gin-gonic/gin"
 )
 
-func InitIntegrationRoutes(router *gin.RouterGroup, dbOperations ops.DatabaseOperations) {
+func InitIntegrationRoutes(router *gin.RouterGroup, dbOperations db.DatabaseOperations) {
 	router.POST("/integration", func(context *gin.Context) {
 		CreateIntegration(dbOperations, context)
 	})
@@ -16,14 +15,14 @@ func InitIntegrationRoutes(router *gin.RouterGroup, dbOperations ops.DatabaseOpe
 	})
 }
 
-func CreateIntegration(dbOperations ops.DatabaseOperations, context *gin.Context) {
-	var newIntegration tables.Integration
-	newIntegration.ID = ops.GenerateUniqueID()
-	ops.CreateResource(dbOperations, context, &newIntegration)
+func CreateIntegration(dbOperations db.DatabaseOperations, context *gin.Context) {
+	var newIntegration db.Integration
+	newIntegration.ID = db.GenerateUniqueID()
+	db.CreateResource(dbOperations, context, &newIntegration)
 }
 
-func GetIntegration(dbOperations ops.DatabaseOperations, context *gin.Context) {
-	var existingIntegration tables.Integration
+func GetIntegration(dbOperations db.DatabaseOperations, context *gin.Context) {
+	var existingIntegration db.Integration
 	if err := dbOperations.Connection().
 		Preload("Product1").
 		Preload("Product2").

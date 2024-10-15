@@ -3,7 +3,6 @@ package db
 import (
 	"fmt"
 	"hypha/api/internal/config"
-	"hypha/api/internal/db/tables"
 	"hypha/api/internal/utils/logging"
 
 	"github.com/go-orm/gorm"
@@ -60,12 +59,12 @@ func Connect(cfg *config.Config) (*gorm.DB, error) {
 }
 
 var tables_slice = []interface{}{
-	&tables.Product{},
-	&tables.Integration{},
-	&tables.Result{},
-	&tables.TestSuite{},
-	&tables.TestCase{},
-	&tables.Property{},
+	&Product{},
+	&Integration{},
+	&Result{},
+	&TestSuite{},
+	&TestCase{},
+	&Property{},
 }
 
 func AutoMigrate(db *gorm.DB) error {

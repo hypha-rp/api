@@ -1,8 +1,7 @@
 package results
 
 import (
-	"hypha/api/internal/db/ops"
-	"hypha/api/internal/db/tables"
+	"hypha/api/internal/db"
 	"hypha/api/internal/utils/logging"
 	"net/http"
 
@@ -17,11 +16,11 @@ var log = logging.Logger
 // Parameters:
 // - router: The router group to which the routes will be added.
 // - dbOperations: The database operations interface for interacting with the database.
-func InitResultsRoutes(router *gin.RouterGroup, dbOperations ops.DatabaseOperations) {
-	router.GET("/results/integration/:id", func(context *gin.Context) {
+func InitResultsRoutes(router *gin.RouterGroup, dbOperations db.DatabaseOperations) {
+	router.GET("/integration/:id", func(context *gin.Context) {
 		GetResultsByIntegrationID(dbOperations, context)
 	})
-	router.GET("/results/product/:productId", func(c *gin.Context) {
+	router.GET("/product/:productId", func(c *gin.Context) {
 		GetResultsByProductID(c, dbOperations)
 	})
 }
@@ -33,7 +32,7 @@ func InitResultsRoutes(router *gin.RouterGroup, dbOperations ops.DatabaseOperati
 // Parameters:
 // - dbOperations: The database operations interface for interacting with the database.
 // - context: The Gin context for the current request.
-func GetResultsByIntegrationID(dbOperations ops.DatabaseOperations, context *gin.Context) {
+func GetResultsByIntegrationID(dbOperations db.DatabaseOperations, context *gin.Context) {
 	integrationID := context.Param("id")
 	if integrationID == "" {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "integration ID is required"})
@@ -78,14 +77,14 @@ func GetResultsByIntegrationID(dbOperations ops.DatabaseOperations, context *gin
 // Parameters:
 // - c: The Gin context for the current request.
 // - dbOperations: The database operations interface for interacting with the database.
-func GetResultsByProductID(c *gin.Context, dbOperations ops.DatabaseOperations) {
+func GetResultsByProductID(c *gin.Context, dbOperations db.DatabaseOperations) {
 	productId := c.Param("productId")
 	if productId == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "productId is required"})
 		return
 	}
 
-	var results []tables.Result
+	var results []db.Result
 
 	db := dbOperations.Connection()
 

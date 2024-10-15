@@ -1,13 +1,12 @@
-package product
+package db
 
 import (
-	"hypha/api/internal/db/ops"
-	"hypha/api/internal/db/tables"
+	"hypha/api/internal/db"
 
 	"github.com/gin-gonic/gin"
 )
 
-func InitProductRoutes(router *gin.RouterGroup, dbOperations ops.DatabaseOperations) {
+func InitProductRoutes(router *gin.RouterGroup, dbOperations db.DatabaseOperations) {
 	router.POST("/product", func(context *gin.Context) {
 		CreateProduct(dbOperations, context)
 	})
@@ -22,19 +21,19 @@ func InitProductRoutes(router *gin.RouterGroup, dbOperations ops.DatabaseOperati
 	})
 }
 
-func CreateProduct(dbOperations ops.DatabaseOperations, context *gin.Context) {
-	var newProduct tables.Product
-	newProduct.ID = ops.GenerateUniqueID()
-	ops.CreateResource(dbOperations, context, &newProduct)
+func CreateProduct(dbOperations db.DatabaseOperations, context *gin.Context) {
+	var newProduct db.Product
+	newProduct.ID = db.GenerateUniqueID()
+	db.CreateResource(dbOperations, context, &newProduct)
 }
 
-func GetProduct(dbOperations ops.DatabaseOperations, context *gin.Context) {
-	var existingProduct tables.Product
-	ops.GetResource(dbOperations, context, &existingProduct, "id", "Product")
+func GetProduct(dbOperations db.DatabaseOperations, context *gin.Context) {
+	var existingProduct db.Product
+	db.GetResource(dbOperations, context, &existingProduct, "id", "Product")
 }
 
-func GetProductIntegrations(dbOperations ops.DatabaseOperations, context *gin.Context) {
-	var integrations []tables.Integration
+func GetProductIntegrations(dbOperations db.DatabaseOperations, context *gin.Context) {
+	var integrations []db.Integration
 	productID := context.Param("id")
 	if err := dbOperations.Connection().
 		Where("product_id1 = ? OR product_id2 = ?", productID, productID).
@@ -47,8 +46,8 @@ func GetProductIntegrations(dbOperations ops.DatabaseOperations, context *gin.Co
 	context.JSON(200, integrations)
 }
 
-func GetAllProducts(dbOperations ops.DatabaseOperations, context *gin.Context) {
-	var products []tables.Product
+func GetAllProducts(dbOperations db.DatabaseOperations, context *gin.Context) {
+	var products []db.Product
 	name := context.Query("name")
 	query := dbOperations.Connection()
 	if name != "" {

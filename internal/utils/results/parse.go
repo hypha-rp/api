@@ -1,12 +1,52 @@
-package parse
+package results
 
 import (
-	"hypha/api/internal/db/ops"
-	"hypha/api/internal/db/tables"
-	"hypha/api/internal/utils/results/structs"
+	"hypha/api/internal/db"
 	"strings"
 	"time"
 )
+
+// ParseJUnitResults parses JUnit test results and stores them in the database.
+//
+// This function iterates over the provided JUnit test suites, creates corresponding
+// result and test suite models, and saves them to the database. It also creates and
+// saves properties and test cases associated with each test suite.
+//
+// Parameters:
+// - testSuites: The JUnitTestSuites containing the test results to be parsed.
+// - dbOperations: The DatabaseOperations interface for interacting with the database.
+// - productId: The ID of the product for which the test results are being parsed.
+//
+// Returns:
+// - error: An error if there is any issue during the parsing or saving of the test results.
+func ParseJUnitResults(testSuites JUnitTestSuites, dbOperations db.DatabaseOperations, productId string) error {
+	for _, suite := range testSuites.TestSuites {
+		resultModel, err := createResultModel(productId)
+		if err != nil {
+			return err
+		}
+		if err := dbOperations.Create(&resultModel); err != nil {
+			return err
+		}
+
+		testSuiteModel, err := createTestSuiteModel(suite, resultModel.ID)
+		if err != nil {
+			return err
+		}
+		if err := dbOperations.Create(&testSuiteModel); err != nil {
+			return err
+		}
+
+		if err := createAndSaveProperties(suite.Properties, testSuiteModel.ID, dbOperations); err != nil {
+			return err
+		}
+
+		if err := createAndSaveTestCases(suite.TestCases, testSuiteModel.ID, dbOperations); err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
 // trimLeadingWhitespace removes the leading whitespace from each line of the input text.
 // It calculates the minimum indentation level across all lines and removes that amount
@@ -67,11 +107,11 @@ func trimLeadingWhitespace(text string) string {
 // - productId: The ID of the product for which the result is being created.
 //
 // Returns:
-// - tables.Result: The created Result model.
+// - db.Result: The created Result model.
 // - error: An error if there is any issue during the creation of the model.
-func createResultModel(productId string) (tables.Result, error) {
-	return tables.Result{
-		ID:           ops.GenerateUniqueID(),
+func createResultModel(productId string) (db.Result, error) {
+	return db.Result{
+		ID:           db.GenerateUniqueID(),
 		ProductID:    productId,
 		DateReported: time.Now().UTC(),
 	}, nil
@@ -85,11 +125,11 @@ func createResultModel(productId string) (tables.Result, error) {
 // - resultID: The ID of the associated result.
 //
 // Returns:
-// - tables.TestSuite: The created TestSuite model.
+// - db.TestSuite: The created TestSuite model.
 // - error: An error if there is any issue during the creation of the model.
-func createTestSuiteModel(suite structs.JUnitTestSuite, resultID string) (tables.TestSuite, error) {
-	return tables.TestSuite{
-		ID:         ops.GenerateUniqueID(),
+func createTestSuiteModel(suite JUnitTestSuite, resultID string) (db.TestSuite, error) {
+	return db.TestSuite{
+		ID:         db.GenerateUniqueID(),
 		ResultID:   resultID,
 		Name:       suite.Name,
 		Tests:      suite.Tests,
@@ -114,14 +154,14 @@ func createTestSuiteModel(suite structs.JUnitTestSuite, resultID string) (tables
 //
 // Returns:
 // - error: An error if there is any issue during the creation or saving of the properties.
-func createAndSaveProperties(properties []structs.Property, testSuiteID string, dbOperations ops.DatabaseOperations) error {
+func createAndSaveProperties(properties []Property, testSuiteID string, dbOperations db.DatabaseOperations) error {
 	for _, property := range properties {
 		value := property.Value
 		if value == "" {
 			value = trimLeadingWhitespace(property.Text)
 		}
-		propertyModel := tables.Property{
-			ID:          ops.GenerateUniqueID(),
+		propertyModel := db.Property{
+			ID:          db.GenerateUniqueID(),
 			TestSuiteID: &testSuiteID,
 			Name:        property.Name,
 			Value:       value,
@@ -144,7 +184,7 @@ func createAndSaveProperties(properties []structs.Property, testSuiteID string, 
 //
 // Returns:
 // - error: An error if there is any issue during the creation or saving of the test cases or their properties.
-func createAndSaveTestCases(testCases []structs.JUnitTestCase, testSuiteID string, dbOperations ops.DatabaseOperations) error {
+func createAndSaveTestCases(testCases []JUnitTestCase, testSuiteID string, dbOperations db.DatabaseOperations) error {
 	for _, testCase := range testCases {
 		testCaseModel, err := createTestCaseModel(testCase, testSuiteID)
 		if err != nil {
@@ -169,13 +209,13 @@ func createAndSaveTestCases(testCases []structs.JUnitTestCase, testSuiteID strin
 // - testSuiteID: The ID of the associated test suite.
 //
 // Returns:
-// - tables.TestCase: The created TestCase model.
+// - db.TestCase: The created TestCase model.
 // - error: An error if there is any issue during the creation of the model.
-func createTestCaseModel(testCase structs.JUnitTestCase, testSuiteID string) (tables.TestCase, error) {
+func createTestCaseModel(testCase JUnitTestCase, testSuiteID string) (db.TestCase, error) {
 	status, message, testCaseType := determineTestCaseStatus(testCase)
 
-	return tables.TestCase{
-		ID:          ops.GenerateUniqueID(),
+	return db.TestCase{
+		ID:          db.GenerateUniqueID(),
 		TestSuiteID: testSuiteID,
 		ClassName:   testCase.ClassName,
 		Name:        testCase.Name,
@@ -201,7 +241,7 @@ func createTestCaseModel(testCase structs.JUnitTestCase, testSuiteID string) (ta
 // - string: The status of the test case ("pass", "fail", "error", or "skipped").
 // - *string: The message associated with the test case status, if any.
 // - *string: The type of the test case status, if any.
-func determineTestCaseStatus(testCase structs.JUnitTestCase) (string, *string, *string) {
+func determineTestCaseStatus(testCase JUnitTestCase) (string, *string, *string) {
 	status := "pass"
 	var message *string
 	var testCaseType *string
@@ -233,14 +273,14 @@ func determineTestCaseStatus(testCase structs.JUnitTestCase) (string, *string, *
 //
 // Returns:
 // - error: An error if there is any issue during the creation or saving of the properties.
-func createAndSaveTestCaseProperties(properties []structs.Property, testCaseID string, dbOperations ops.DatabaseOperations) error {
+func createAndSaveTestCaseProperties(properties []Property, testCaseID string, dbOperations db.DatabaseOperations) error {
 	for _, property := range properties {
 		value := property.Value
 		if value == "" {
 			value = trimLeadingWhitespace(property.Text)
 		}
-		propertyModel := tables.Property{
-			ID:         ops.GenerateUniqueID(),
+		propertyModel := db.Property{
+			ID:         db.GenerateUniqueID(),
 			TestCaseID: &testCaseID,
 			Name:       property.Name,
 			Value:      value,

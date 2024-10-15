@@ -4,12 +4,11 @@ import (
 	"bytes"
 	"encoding/xml"
 	"hypha/api/internal/db"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"hypha/api/internal/utils/logging"
-	"hypha/api/internal/utils/results/parse"
-	"hypha/api/internal/utils/results/structs"
+	"hypha/api/internal/utils/results"
 
 	"github.com/gin-gonic/gin"
 )
@@ -35,7 +34,7 @@ func InitReportRoutes(router *gin.RouterGroup, dbOperations db.DatabaseOperation
 // - c: The Gin context for the current request.
 // - dbOperations: The database operations interface for interacting with the database.
 func ReportResults(c *gin.Context, dbOperations db.DatabaseOperations) {
-	var junitTestSuites structs.JUnitTestSuites
+	var junitTestSuites results.JUnitTestSuites
 	var product db.Product
 
 	productId := c.PostForm("productId")
@@ -67,7 +66,7 @@ func ReportResults(c *gin.Context, dbOperations db.DatabaseOperations) {
 	}
 	defer fileContent.Close()
 
-	byteValue, err := ioutil.ReadAll(fileContent)
+	byteValue, err := io.ReadAll(fileContent)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read file"})
 		return
@@ -83,7 +82,7 @@ func ReportResults(c *gin.Context, dbOperations db.DatabaseOperations) {
 		return
 	}
 
-	if err := parse.ParseJUnitResults(junitTestSuites, dbOperations, productId); err != nil {
+	if err := results.ParseJUnitResults(junitTestSuites, dbOperations, productId); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

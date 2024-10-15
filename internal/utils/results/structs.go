@@ -1,4 +1,4 @@
-package structs
+package results
 
 type JUnitTestSuites struct {
 	Name       string           `xml:"name,attr"`

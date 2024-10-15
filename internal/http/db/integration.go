@@ -1,4 +1,4 @@
-package integration
+package db
 
 import (
 	"hypha/api/internal/db"

@@ -17,10 +17,10 @@ var log = logging.Logger
 // - router: The router group to which the routes will be added.
 // - dbOperations: The database operations interface for interacting with the database.
 func InitResultsRoutes(router *gin.RouterGroup, dbOperations db.DatabaseOperations) {
-	router.GET("/results/integration/:id", func(context *gin.Context) {
+	router.GET("/integration/:id", func(context *gin.Context) {
 		GetResultsByIntegrationID(dbOperations, context)
 	})
-	router.GET("/results/product/:productId", func(c *gin.Context) {
+	router.GET("/product/:productId", func(c *gin.Context) {
 		GetResultsByProductID(c, dbOperations)
 	})
 }

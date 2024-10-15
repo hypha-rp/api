@@ -1,7 +1,7 @@
 package http
 
 import (
-	"hypha/api/internal/db/ops"
+	"hypha/api/internal/db"
 	"hypha/api/internal/http/db/integration"
 	"hypha/api/internal/http/db/product"
 	"hypha/api/internal/http/report"
@@ -13,7 +13,7 @@ import (
 
 var log = logging.Logger
 
-func InitRoutes(router *gin.Engine, dbOperations ops.DatabaseOperations) {
+func InitRoutes(router *gin.Engine, dbOperations db.DatabaseOperations) {
 	log.Info().Msg("Initializing routes")
 
 	dbGroup := router.Group("/db")

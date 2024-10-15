@@ -2,8 +2,7 @@ package report
 
 import (
 	"encoding/xml"
-	"hypha/api/internal/db/ops"
-	"hypha/api/internal/db/tables"
+	"hypha/api/internal/db"
 	"io/ioutil"
 	"net/http"
 
@@ -22,7 +21,7 @@ var logger = logging.Logger
 // Parameters:
 // - router: The router group to which the routes will be added.
 // - dbOperations: The database operations interface for interacting with the database.
-func InitReportRoutes(router *gin.RouterGroup, dbOperations ops.DatabaseOperations) {
+func InitReportRoutes(router *gin.RouterGroup, dbOperations db.DatabaseOperations) {
 	router.POST("/results", func(c *gin.Context) {
 		ReportResults(c, dbOperations)
 	})
@@ -34,9 +33,9 @@ func InitReportRoutes(router *gin.RouterGroup, dbOperations ops.DatabaseOperatio
 // Parameters:
 // - c: The Gin context for the current request.
 // - dbOperations: The database operations interface for interacting with the database.
-func ReportResults(c *gin.Context, dbOperations ops.DatabaseOperations) {
+func ReportResults(c *gin.Context, dbOperations db.DatabaseOperations) {
 	var junitTestSuites structs.JUnitTestSuites
-	var product tables.Product
+	var product db.Product
 
 	productId := c.PostForm("productId")
 	if productId == "" {

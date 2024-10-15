@@ -1,8 +1,7 @@
 package parse
 
 import (
-	"hypha/api/internal/db/ops"
-	"hypha/api/internal/db/tables"
+	"hypha/api/internal/db"
 	"hypha/api/internal/utils/results/structs"
 	"strings"
 	"time"
@@ -67,11 +66,11 @@ func trimLeadingWhitespace(text string) string {
 // - productId: The ID of the product for which the result is being created.
 //
 // Returns:
-// - tables.Result: The created Result model.
+// - db.Result: The created Result model.
 // - error: An error if there is any issue during the creation of the model.
-func createResultModel(productId string) (tables.Result, error) {
-	return tables.Result{
-		ID:           ops.GenerateUniqueID(),
+func createResultModel(productId string) (db.Result, error) {
+	return db.Result{
+		ID:           db.GenerateUniqueID(),
 		ProductID:    productId,
 		DateReported: time.Now().UTC(),
 	}, nil
@@ -85,11 +84,11 @@ func createResultModel(productId string) (tables.Result, error) {
 // - resultID: The ID of the associated result.
 //
 // Returns:
-// - tables.TestSuite: The created TestSuite model.
+// - db.TestSuite: The created TestSuite model.
 // - error: An error if there is any issue during the creation of the model.
-func createTestSuiteModel(suite structs.JUnitTestSuite, resultID string) (tables.TestSuite, error) {
-	return tables.TestSuite{
-		ID:         ops.GenerateUniqueID(),
+func createTestSuiteModel(suite structs.JUnitTestSuite, resultID string) (db.TestSuite, error) {
+	return db.TestSuite{
+		ID:         db.GenerateUniqueID(),
 		ResultID:   resultID,
 		Name:       suite.Name,
 		Tests:      suite.Tests,
@@ -114,14 +113,14 @@ func createTestSuiteModel(suite structs.JUnitTestSuite, resultID string) (tables
 //
 // Returns:
 // - error: An error if there is any issue during the creation or saving of the properties.
-func createAndSaveProperties(properties []structs.Property, testSuiteID string, dbOperations ops.DatabaseOperations) error {
+func createAndSaveProperties(properties []structs.Property, testSuiteID string, dbOperations db.DatabaseOperations) error {
 	for _, property := range properties {
 		value := property.Value
 		if value == "" {
 			value = trimLeadingWhitespace(property.Text)
 		}
-		propertyModel := tables.Property{
-			ID:          ops.GenerateUniqueID(),
+		propertyModel := db.Property{
+			ID:          db.GenerateUniqueID(),
 			TestSuiteID: &testSuiteID,
 			Name:        property.Name,
 			Value:       value,
@@ -144,7 +143,7 @@ func createAndSaveProperties(properties []structs.Property, testSuiteID string, 
 //
 // Returns:
 // - error: An error if there is any issue during the creation or saving of the test cases or their properties.
-func createAndSaveTestCases(testCases []structs.JUnitTestCase, testSuiteID string, dbOperations ops.DatabaseOperations) error {
+func createAndSaveTestCases(testCases []structs.JUnitTestCase, testSuiteID string, dbOperations db.DatabaseOperations) error {
 	for _, testCase := range testCases {
 		testCaseModel, err := createTestCaseModel(testCase, testSuiteID)
 		if err != nil {
@@ -169,13 +168,13 @@ func createAndSaveTestCases(testCases []structs.JUnitTestCase, testSuiteID strin
 // - testSuiteID: The ID of the associated test suite.
 //
 // Returns:
-// - tables.TestCase: The created TestCase model.
+// - db.TestCase: The created TestCase model.
 // - error: An error if there is any issue during the creation of the model.
-func createTestCaseModel(testCase structs.JUnitTestCase, testSuiteID string) (tables.TestCase, error) {
+func createTestCaseModel(testCase structs.JUnitTestCase, testSuiteID string) (db.TestCase, error) {
 	status, message, testCaseType := determineTestCaseStatus(testCase)
 
-	return tables.TestCase{
-		ID:          ops.GenerateUniqueID(),
+	return db.TestCase{
+		ID:          db.GenerateUniqueID(),
 		TestSuiteID: testSuiteID,
 		ClassName:   testCase.ClassName,
 		Name:        testCase.Name,
@@ -233,14 +232,14 @@ func determineTestCaseStatus(testCase structs.JUnitTestCase) (string, *string, *
 //
 // Returns:
 // - error: An error if there is any issue during the creation or saving of the properties.
-func createAndSaveTestCaseProperties(properties []structs.Property, testCaseID string, dbOperations ops.DatabaseOperations) error {
+func createAndSaveTestCaseProperties(properties []structs.Property, testCaseID string, dbOperations db.DatabaseOperations) error {
 	for _, property := range properties {
 		value := property.Value
 		if value == "" {
 			value = trimLeadingWhitespace(property.Text)
 		}
-		propertyModel := tables.Property{
-			ID:         ops.GenerateUniqueID(),
+		propertyModel := db.Property{
+			ID:         db.GenerateUniqueID(),
 			TestCaseID: &testCaseID,
 			Name:       property.Name,
 			Value:      value,

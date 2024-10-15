@@ -1,11 +1,11 @@
 package parse
 
 import (
-	"hypha/api/internal/db/ops"
+	"hypha/api/internal/db"
 	"hypha/api/internal/utils/results/structs"
 )
 
-func ParseJUnitResults(testSuites structs.JUnitTestSuites, dbOperations ops.DatabaseOperations, productId string) error {
+func ParseJUnitResults(testSuites structs.JUnitTestSuites, dbOperations db.DatabaseOperations, productId string) error {
 	for _, suite := range testSuites.TestSuites {
 		resultModel, err := createResultModel(productId)
 		if err != nil {

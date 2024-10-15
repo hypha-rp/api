@@ -1,7 +1,7 @@
 package results
 
 import (
-	"hypha/api/internal/db/tables"
+	"hypha/api/internal/db"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -23,8 +23,8 @@ func logErrorAndRespond(context *gin.Context, message string, err error) {
 // - testSuites: A slice of TestSuite objects.
 // Returns:
 // - A map where the keys are result IDs and the values are slices of TestSuite objects.
-func createResultMap(testSuites []tables.TestSuite) map[string][]tables.TestSuite {
-	resultMap := make(map[string][]tables.TestSuite)
+func createResultMap(testSuites []db.TestSuite) map[string][]db.TestSuite {
+	resultMap := make(map[string][]db.TestSuite)
 	for _, testSuite := range testSuites {
 		resultID := testSuite.ResultID
 		resultMap[resultID] = append(resultMap[resultID], testSuite)
@@ -39,18 +39,18 @@ func createResultMap(testSuites []tables.TestSuite) map[string][]tables.TestSuit
 // Returns:
 // - A slice of Gin H maps containing result and product information.
 // - An error if any database operation fails.
-func fetchResultsAndProducts(db *gorm.DB, resultMap map[string][]tables.TestSuite) ([]gin.H, error) {
+func fetchResultsAndProducts(dbConn *gorm.DB, resultMap map[string][]db.TestSuite) ([]gin.H, error) {
 	var results []gin.H
 	for resultID, testSuites := range resultMap {
-		var result tables.Result
-		err := db.Where("id = ?", resultID).First(&result).Error
+		var result db.Result
+		err := dbConn.Where("id = ?", resultID).First(&result).Error
 		if err != nil {
 			return nil, err
 		}
 		result.TestSuites = testSuites
 
-		var product tables.Product
-		err = db.Where("id = ?", result.ProductID).First(&product).Error
+		var product db.Product
+		err = dbConn.Where("id = ?", result.ProductID).First(&product).Error
 		if err != nil {
 			return nil, err
 		}
@@ -133,10 +133,10 @@ func getTestSuiteAndCaseIDs(db *gorm.DB, integrationID string) ([]string, []stri
 // Returns:
 // - A slice of TestSuite objects.
 // - An error if any database operation fails.
-func getTestSuites(db *gorm.DB, testSuiteIDs, testCaseIDs []string) ([]tables.TestSuite, error) {
-	var testSuites []tables.TestSuite
+func getTestSuites(dbConn *gorm.DB, testSuiteIDs, testCaseIDs []string) ([]db.TestSuite, error) {
+	var testSuites []db.TestSuite
 
-	err := db.Where("id::text IN (?) OR id::text IN (SELECT test_suite_id::text FROM test_cases WHERE id::text IN (?))", testSuiteIDs, testCaseIDs).
+	err := dbConn.Where("id::text IN (?) OR id::text IN (SELECT test_suite_id::text FROM test_cases WHERE id::text IN (?))", testSuiteIDs, testCaseIDs).
 		Preload("TestCases").
 		Preload("TestCases.Properties").
 		Preload("Properties").
@@ -153,9 +153,9 @@ func getTestSuites(db *gorm.DB, testSuiteIDs, testCaseIDs []string) ([]tables.Te
 // Parameters:
 // - testSuites: A slice of TestSuite objects to filter.
 // - integrationID: The integration ID to filter by.
-func filterTestCases(testSuites []tables.TestSuite, integrationID string) {
+func filterTestCases(testSuites []db.TestSuite, integrationID string) {
 	for i := range testSuites {
-		var filteredTestCases []tables.TestCase
+		var filteredTestCases []db.TestCase
 		suiteHasIntegration := false
 
 		for _, property := range testSuites[i].Properties {

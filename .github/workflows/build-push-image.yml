@@ -1,0 +1,17 @@
+name: build-push-image
+on:
+  release:
+    types: [released]
+
+permissions:
+  contents: write
+  packages: write
+  issues: write
+
+jobs:
+  build-push-image:
+    uses: hypha-rp/actions/.github/workflows/build-push-image.yml@main
+    with:
+      tags: |
+        ghcr.io/${{ github.repository }}:${{ github.event.release.tag_name }}
+        ghcr.io/${{ github.repository }}:latest

@@ -1,0 +1,15 @@
+name: pull-request-checks
+
+on:
+    pull_request:
+      branches:
+        - main
+
+permissions:
+  contents: read
+  packages: read
+  issues: read
+
+jobs:
+    build-image:
+        uses: hypha-rp/actions/.github/workflows/build-image.yml@main

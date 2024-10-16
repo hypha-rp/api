@@ -1,0 +1,20 @@
+name: version
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  packages: write
+  issues: write
+
+jobs:
+  version:
+    uses: hypha-rp/actions/.github/workflows/semantic-release.yml@main
+    with:
+      node-version: "22.x"
+    secrets:
+      github-token: ${{ secrets.PAT }}
+  

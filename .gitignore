@@ -22,4 +22,6 @@ go.work
 
 # VS Code
 .vscode/*
+
 #dev/
+node_modules

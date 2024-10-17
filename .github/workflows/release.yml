@@ -25,6 +25,7 @@ jobs:
         uses: hypha-rp/actions/.github/actions/semantic-release@main
         with:
           node-version: '22'
+          pat: ${{ secrets.PAT }}
 
       - name: Use output from shared action
         run: |

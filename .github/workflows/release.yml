@@ -2,16 +2,27 @@ name: release
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
+      - fix-release
 
 permissions:
   contents: write
   packages: write
   issues: write
 
-jobs:  
+jobs: 
+  version:
+    uses: hypha-rp/actions/.github/workflows/semantic-release.yml@main
+    with:
+      node-version: "22.x"
+    secrets:
+      github-token: ${{ secrets.PAT }}
+
   release:
+    needs: version
+    if: ${{ needs.version.outputs.version != '' }}
+    name: release ${{ needs.version.outputs.version }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

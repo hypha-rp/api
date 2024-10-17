@@ -64,3 +64,4 @@ jobs:
             ghcr.io/${{ github.repository }}:${{ needs.version.outputs.version }}
             ghcr.io/${{ github.repository }}:latest
           push: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}

@@ -10,6 +10,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// InitIntegrationRoutes initializes the integration routes for the given router group.
+// It sets up the POST and GET endpoints for creating and retrieving integrations.
+//
+// Parameters:
+//
+//	router (*gin.RouterGroup): The router group to which the routes will be added.
+//	dbOperations (db.DatabaseOperations): The database operations interface used for database interactions.
+//
+// Routes:
+//
+//	POST /integration: Calls CreateIntegration to handle the creation of a new integration.
+//	GET /integration/:id: Calls GetIntegration to handle retrieving an integration by ID.
 func InitIntegrationRoutes(router *gin.RouterGroup, dbOperations db.DatabaseOperations) {
 	router.POST("/integration", func(context *gin.Context) {
 		CreateIntegration(dbOperations, context)
@@ -19,6 +31,24 @@ func InitIntegrationRoutes(router *gin.RouterGroup, dbOperations db.DatabaseOper
 	})
 }
 
+// CreateIntegration handles the creation of a new integration between two products.
+// It reads the request body, validates the input, and creates a new integration record in the database.
+//
+// Parameters:
+//
+//	dbOperations (db.DatabaseOperations): The database operations interface used for database interactions.
+//	context (*gin.Context): The Gin context that provides request and response handling.
+//
+// Request Body:
+//
+//	The request body should be a JSON object containing the following fields:
+//	  - productID1 (string): The ID of the first product.
+//	  - productID2 (string): The ID of the second product.
+//
+// Responses:
+//
+//	400 Bad Request: If the request body is invalid, or if the product IDs are empty or the same.
+//	201 Created: If the integration is successfully created.
 func CreateIntegration(dbOperations db.DatabaseOperations, context *gin.Context) {
 	var requestBody map[string]string
 
@@ -53,6 +83,22 @@ func CreateIntegration(dbOperations db.DatabaseOperations, context *gin.Context)
 	db.CreateResource(dbOperations, context, &newIntegration)
 }
 
+// GetIntegration retrieves an existing integration by its ID.
+// It fetches the integration from the database, including related products, and returns it in the response.
+//
+// Parameters:
+//
+//	dbOperations (db.DatabaseOperations): The database operations interface used for database interactions.
+//	context (*gin.Context): The Gin context that provides request and response handling.
+//
+// Path Parameters:
+//
+//	id (string): The ID of the integration to retrieve.
+//
+// Responses:
+//
+//	500 Internal Server Error: If there is an error retrieving the integration from the database.
+//	200 OK: If the integration is successfully retrieved, returns the integration object.
 func GetIntegration(dbOperations db.DatabaseOperations, context *gin.Context) {
 	var existingIntegration db.Integration
 	if err := dbOperations.Connection().

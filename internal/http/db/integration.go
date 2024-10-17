@@ -32,7 +32,7 @@ func InitIntegrationRoutes(router *gin.RouterGroup, dbOperations db.DatabaseOper
 }
 
 // CreateIntegration handles the creation of a new integration between two products.
-// It reads the request body, validates the input, and creates a new integration record in the database.
+// It reads the request body, validates the input, checks for existing integrations, and creates a new integration record in the database.
 //
 // Parameters:
 //
@@ -47,11 +47,10 @@ func InitIntegrationRoutes(router *gin.RouterGroup, dbOperations db.DatabaseOper
 //
 // Responses:
 //
-//	400 Bad Request: If the request body is invalid, or if the product IDs are empty or the same.
+//	400 Bad Request: If the request body is invalid, if the product IDs are empty or the same, or if an integration already exists for the given products.
 //	201 Created: If the integration is successfully created.
 func CreateIntegration(dbOperations db.DatabaseOperations, context *gin.Context) {
 	var requestBody map[string]string
-
 	body, err := io.ReadAll(context.Request.Body)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "Failed to read request body"})
@@ -75,6 +74,14 @@ func CreateIntegration(dbOperations db.DatabaseOperations, context *gin.Context)
 
 	if productID1 == productID2 {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "Cannot create integration for the same product"})
+		return
+	}
+
+	var existingIntegration db.Integration
+	if err := dbOperations.Connection().
+		Where("(product_id1 = ? AND product_id2 = ?) OR (product_id1 = ? AND product_id2 = ?)", productID1, productID2, productID2, productID1).
+		First(&existingIntegration).Error; err == nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Integration already exists for the given products"})
 		return
 	}
 

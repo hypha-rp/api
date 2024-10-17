@@ -23,8 +23,8 @@ jobs:
 
   release:
     needs: version
-    if: ${{ needs.version.outputs.version != '' }}
-    name: release ${{ needs.version.outputs.version }}
+    if: ${{ needs.version.outputs['semantic-release'].version != '' }}
+    name: release ${{ needs.version.outputs['semantic-release'].version != '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

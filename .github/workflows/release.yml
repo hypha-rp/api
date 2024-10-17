@@ -16,6 +16,8 @@ permissions:
 jobs: 
   version:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.semantic-release.outputs.version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,14 +29,11 @@ jobs:
           node-version: '22'
           pat: ${{ secrets.PAT }}
 
-      - name: Use output from shared action
-        run: |
-          echo "Version from shared action: ${{ steps.semantic-release.outputs.version }}"
 
   release:
     needs: version
-    if: ${{ needs.version.outputs['semantic-release'].version != '' }}
-    name: release ${{ needs.version.outputs['semantic-release'].version }}
+    if: ${{ needs.version.outputs.version != '' }}
+    name: release ${{ needs.version.outputs.version != '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

@@ -2,16 +2,33 @@ name: release
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
 
 permissions:
   contents: write
   packages: write
   issues: write
+  pull-requests: write
+  id-token: write
 
-jobs:  
+jobs: 
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.semantic-release.outputs.version }}
+    steps:
+      - name: Semantic Release
+        id: semantic-release
+        uses: hypha-rp/actions/semantic-release@main
+        with:
+          node-version: '22'
+          pat: ${{ secrets.PAT }}
+
+
   release:
+    needs: version
+    if: ${{ needs.version.outputs.version != '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -32,4 +49,18 @@ jobs:
           version: "latest"
           args: release --clean
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  container:
+    needs: [version, release]
+    if: ${{ needs.version.outputs.version != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build and push image
+        uses: hypha-rp/actions/build-image@main
+        with:
+          tags: |
+            ghcr.io/${{ github.repository }}:${{ needs.version.outputs.version }}
+            ghcr.io/${{ github.repository }}:latest
+          push: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}

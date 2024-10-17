@@ -1,4 +1,4 @@
-name: pull-request-checks
+name: pull-request
 
 on:
     pull_request:
@@ -11,5 +11,8 @@ permissions:
   issues: read
 
 jobs:
-    build-image:
-        uses: hypha-rp/actions/.github/workflows/build-image.yml@main
+  build-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build image
+        uses: hypha-rp/actions/build-image@main

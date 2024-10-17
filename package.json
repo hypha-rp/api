@@ -1,6 +1,5 @@
 {
   "name": "hypha-api",
-  "version": "1.0.0",
   "scripts": {
     "release": "semantic-release"
   },

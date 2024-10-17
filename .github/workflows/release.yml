@@ -18,6 +18,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.PAT }}
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -32,3 +33,12 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
+
+  build-push-image:
+    uses: hypha-rp/actions/.github/workflows/build-push-image.yml@main
+    with:
+      tags: |
+        ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+        ghcr.io/${{ github.repository }}:latest
+    secrets:
+      github-token: ${{ secrets.PAT }}

@@ -15,3 +15,5 @@ jobs:
       tags: |
         ghcr.io/${{ github.repository }}:${{ github.event.release.tag_name }}
         ghcr.io/${{ github.repository }}:latest
+    secrets:
+      github-token: ${{ secrets.PAT }}

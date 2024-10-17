@@ -1,7 +1,7 @@
 name: build-push-image
 on:
   release:
-    types: [released]
+    types: [published]
 
 permissions:
   contents: write

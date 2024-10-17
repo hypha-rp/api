@@ -11,5 +11,5 @@ permissions:
   issues: read
 
 jobs:
-    build-image:
-        uses: hypha-rp/actions/.github/workflows/build-image.yml@main
+  build-image:
+      uses: hypha-rp/actions/.github/workflows/build-image.yml@main

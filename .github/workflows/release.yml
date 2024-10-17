@@ -15,16 +15,25 @@ permissions:
 
 jobs: 
   version:
-    uses: hypha-rp/actions/.github/workflows/semantic-release.yml@main
-    with:
-      node-version: "22.x"
-    secrets:
-      github-token: ${{ secrets.PAT }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Semantic Release
+        id: semantic-release
+        uses: hypha-rp/actions/.github/actions/semantic-release/action.yml@main
+        with:
+          node-version: '22'
+
+      - name: Use output from shared action
+        run: |
+          echo "Version from shared action: ${{ steps.semantic-release.outputs.version }}"
 
   release:
     needs: version
-    if: ${{ needs.version.outputs['semantic-release'].version != '' }}
-    name: release ${{ needs.version.outputs['semantic-release'].version != '' }}
+    if: ${{ needs.version.semantic-release.version != '' }}
+    name: release ${{ needs.version.semantic-release.version != '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

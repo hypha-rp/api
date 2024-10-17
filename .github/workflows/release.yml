@@ -22,7 +22,7 @@ jobs:
 
       - name: Semantic Release
         id: semantic-release
-        uses: hypha-rp/actions/.github/actions/semantic-release/action.yml@main
+        uses: hypha-rp/actions/.github/actions/semantic-release@main
         with:
           node-version: '22'
 

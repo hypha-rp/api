@@ -2,28 +2,20 @@ package results
 
 import (
 	"hypha/api/internal/db"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-orm/gorm"
+	"github.com/rs/zerolog/log"
 )
 
-// logErrorAndRespond logs an error message and sends a JSON response with an internal server error status.
-// Parameters:
-// - context: The Gin context to use for sending the response.
-// - message: The error message to log.
-// - err: The error to log.
-func logErrorAndRespond(context *gin.Context, message string, err error) {
-	log.Error().Msgf("%s: %v", message, err)
-	context.JSON(http.StatusInternalServerError, gin.H{"error": "There was a problem processing your request"})
-}
+// TODO: update this to ue the rule-base system to retrieve results accordingly
 
 // createResultMap creates a map of result IDs to their corresponding test suites.
 // Parameters:
 // - testSuites: A slice of TestSuite objects.
 // Returns:
 // - A map where the keys are result IDs and the values are slices of TestSuite objects.
-func createResultMap(testSuites []db.TestSuite) map[string][]db.TestSuite {
+func CreateResultMap(testSuites []db.TestSuite) map[string][]db.TestSuite {
 	resultMap := make(map[string][]db.TestSuite)
 	for _, testSuite := range testSuites {
 		resultID := testSuite.ResultID
@@ -39,7 +31,7 @@ func createResultMap(testSuites []db.TestSuite) map[string][]db.TestSuite {
 // Returns:
 // - A slice of Gin H maps containing result and product information.
 // - An error if any database operation fails.
-func fetchResultsAndProducts(dbConn *gorm.DB, resultMap map[string][]db.TestSuite) ([]gin.H, error) {
+func FetchResultsAndProducts(dbConn *gorm.DB, resultMap map[string][]db.TestSuite) ([]gin.H, error) {
 	var results []gin.H
 	for resultID, testSuites := range resultMap {
 		var result db.Result
@@ -74,7 +66,7 @@ func fetchResultsAndProducts(dbConn *gorm.DB, resultMap map[string][]db.TestSuit
 // - A slice of test suite IDs.
 // - A slice of test case IDs.
 // - An error if any database operation fails.
-func getTestSuiteAndCaseIDs(db *gorm.DB, integrationID string) ([]string, []string, error) {
+func GetTestSuiteAndCaseIDs(db *gorm.DB, integrationID string) ([]string, []string, error) {
 	var testSuiteIDs []string
 	var testCaseIDs []string
 
@@ -133,7 +125,7 @@ func getTestSuiteAndCaseIDs(db *gorm.DB, integrationID string) ([]string, []stri
 // Returns:
 // - A slice of TestSuite objects.
 // - An error if any database operation fails.
-func getTestSuites(dbConn *gorm.DB, testSuiteIDs, testCaseIDs []string) ([]db.TestSuite, error) {
+func GetTestSuites(dbConn *gorm.DB, testSuiteIDs, testCaseIDs []string) ([]db.TestSuite, error) {
 	var testSuites []db.TestSuite
 
 	err := dbConn.Where("id::text IN (?) OR id::text IN (SELECT test_suite_id::text FROM test_cases WHERE id::text IN (?))", testSuiteIDs, testCaseIDs).
@@ -153,7 +145,7 @@ func getTestSuites(dbConn *gorm.DB, testSuiteIDs, testCaseIDs []string) ([]db.Te
 // Parameters:
 // - testSuites: A slice of TestSuite objects to filter.
 // - integrationID: The integration ID to filter by.
-func filterTestCases(testSuites []db.TestSuite, integrationID string) {
+func FilterTestCases(testSuites []db.TestSuite, integrationID string) {
 	for i := range testSuites {
 		var filteredTestCases []db.TestCase
 		suiteHasIntegration := false

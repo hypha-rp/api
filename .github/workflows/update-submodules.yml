@@ -1,0 +1,19 @@
+name: Update Submodules
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'dev-tools'
+  workflow_dispatch:
+
+jobs:
+  update-submodules:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Update submodules
+      uses: hypha-rp/actions/update-submodules@main
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}

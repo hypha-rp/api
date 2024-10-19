@@ -13,6 +13,15 @@ import (
 
 var log = logging.Logger
 
+// validateCorsPolicy validates the CORS policy configuration.
+// It checks that the configuration specifies at least one allowed origin, method, and header.
+// It also ensures that origins contain '*' or include 'http://' or 'https://'.
+//
+// Parameters:
+// - cfg: The configuration object containing the CORS policy.
+//
+// Returns:
+// - error: An error if the CORS policy configuration is invalid.
 func validateCorsPolicy(cfg *config.Config) error {
 	if len(cfg.Http.CorsPolicy.AllowOrigins) == 0 {
 		return errors.New("CORS policy must specify at least one allowed origin")
@@ -31,6 +40,15 @@ func validateCorsPolicy(cfg *config.Config) error {
 	return nil
 }
 
+// InitRouter initializes the Gin router with the given configuration.
+// It validates the CORS policy, sets up middleware, and configures CORS settings.
+//
+// Parameters:
+// - cfg: The configuration object containing the CORS policy and other settings.
+//
+// Returns:
+// - *gin.Engine: The initialized Gin engine.
+// - error: An error if the CORS policy configuration is invalid.
 func InitRouter(cfg *config.Config) (*gin.Engine, error) {
 	log.Info().Msg("Initializing router")
 

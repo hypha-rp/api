@@ -6,17 +6,53 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// CreateProduct handles the creation of a new product.
+// It generates a unique ID for the new product and creates the product in the database.
+//
+// Parameters:
+// - dbOps: The database operations interface used for database interactions.
+// - context: The Gin context that provides request and response handling.
+//
+// Request Body:
+// The request body should be a JSON object containing the fields required for a Product.
+//
+// Responses:
+// - 201 Created: If the product is successfully created.
 func CreateProduct(dbOps db.DatabaseOperations, context *gin.Context) {
 	var newProduct db.Product
 	newProduct.ID = db.GenerateUniqueID()
 	db.CreateResource(dbOps, context, &newProduct)
 }
 
+// GetProduct retrieves an existing product by its ID.
+// It fetches the product from the database and returns it in the response.
+//
+// Parameters:
+// - dbOps: The database operations interface used for database interactions.
+// - context: The Gin context that provides request and response handling.
+//
+// Path Parameters:
+// - id (string): The ID of the product to retrieve.
+//
+// Responses:
+// - 200 OK: If the product is successfully retrieved, returns the product object.
 func GetProduct(dbOps db.DatabaseOperations, context *gin.Context) {
 	var existingProduct db.Product
 	db.GetResource(dbOps, context, &existingProduct, "id", "Product")
 }
 
+// GetProductIntegrations retrieves integrations for a product by its ID.
+// It fetches the integrations from the database and returns them in the response.
+//
+// Parameters:
+// - dbOps: The database operations interface used for database interactions.
+// - context: The Gin context that provides request and response handling.
+//
+// Path Parameters:
+// - id (string): The ID of the product to retrieve integrations for.
+//
+// Responses:
+// - 200 OK: If the integrations are successfully retrieved, returns the integrations object.
 func GetProductIntegrations(dbOps db.DatabaseOperations, context *gin.Context) {
 	var integrations []db.Integration
 	productID := context.Param("id")
@@ -31,6 +67,18 @@ func GetProductIntegrations(dbOps db.DatabaseOperations, context *gin.Context) {
 	context.JSON(200, integrations)
 }
 
+// GetAllProducts retrieves all products, optionally filtered by name.
+// It fetches the products from the database and returns them in the response.
+//
+// Parameters:
+// - dbOps: The database operations interface used for database interactions.
+// - context: The Gin context that provides request and response handling.
+//
+// Query Parameters:
+// - name (string): Optional. The name to filter products by.
+//
+// Responses:
+// - 200 OK: If the products are successfully retrieved, returns the products object.
 func GetAllProducts(dbOps db.DatabaseOperations, context *gin.Context) {
 	var products []db.Product
 	name := context.Query("name")

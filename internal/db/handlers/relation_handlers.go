@@ -15,21 +15,18 @@ import (
 // It reads the request body, validates the input, checks for existing relationships, and creates a new relationship record in the database.
 //
 // Parameters:
-//
-//	dbOps (db.DatabaseOperations): The database operations interface used for database interactions.
-//	context (*gin.Context): The Gin context that provides request and response handling.
+// - dbOps: The database operations interface used for database interactions.
+// - context: The Gin context that provides request and response handling.
 //
 // Request Body:
-//
-//	The request body should be a JSON object containing the following fields:
-//	  - productID1 (string): The ID of the first product.
-//	  - productID2 (string): The ID of the second product.
-//	  - relationshipType (string): The type of the relationship (e.g., "integration", "dependency").
+// The request body should be a JSON object containing the following fields:
+//   - objectID1 (string): The ID of the first object.
+//   - objectID2 (string): The ID of the second object.
+//   - relationshipType (string): The type of the relationship (e.g., "integration", "dependency").
 //
 // Responses:
-//
-//	400 Bad Request: If the request body is invalid, if the product IDs are empty or the same, or if a relationship already exists for the given products.
-//	201 Created: If the relationship is successfully created.
+// - 400 Bad Request: If the request body is invalid, if the object IDs are empty or the same, or if a relationship already exists for the given objects.
+// - 201 Created: If the relationship is successfully created.
 func CreateRelationship(dbOps db.DatabaseOperations, context *gin.Context) {
 	// Read the request body and parse the JSON
 	var requestBody map[string]string
@@ -83,18 +80,15 @@ func CreateRelationship(dbOps db.DatabaseOperations, context *gin.Context) {
 // It fetches the relationship from the database, including related products, and returns it in the response.
 //
 // Parameters:
-//
-//	dbOps (db.DatabaseOperations): The database operations interface used for database interactions.
-//	context (*gin.Context): The Gin context that provides request and response handling.
+// - dbOps: The database operations interface used for database interactions.
+// - context: The Gin context that provides request and response handling.
 //
 // Path Parameters:
-//
-//	id (string): The ID of the relationship to retrieve.
+// - id (string): The ID of the relationship to retrieve.
 //
 // Responses:
-//
-//	500 Internal Server Error: If there is an error retrieving the relationship from the database.
-//	200 OK: If the relationship is successfully retrieved, returns the relationship object.
+// - 500 Internal Server Error: If there is an error retrieving the relationship from the database.
+// - 200 OK: If the relationship is successfully retrieved, returns the relationship object.
 func GetRelationship(dbOps db.DatabaseOperations, context *gin.Context) {
 	var existingRelationship db.Relationship
 	if err := dbOps.Connection().

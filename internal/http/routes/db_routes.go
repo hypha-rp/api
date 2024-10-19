@@ -7,6 +7,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// InitProductRoutes initializes the product routes for the given router group.
+// It sets up the POST and GET endpoints for creating and retrieving products and their integrations.
+//
+// Parameters:
+// - router: The router group to which the routes will be added.
+// - dbOps: The database operations interface used for database interactions.
+//
+// Routes:
+// - POST /product: Calls CreateProduct to handle the creation of a new product.
+// - GET /product/:id: Calls GetProduct to handle retrieving a product by ID.
+// - GET /product/:id/integrations: Calls GetProductIntegrations to handle retrieving integrations for a product by ID.
+// - GET /products: Calls GetAllProducts to handle retrieving all products.
 func InitProductRoutes(router *gin.RouterGroup, dbOps db.DatabaseOperations) {
 	router.POST("/product", func(context *gin.Context) {
 		handlers.CreateProduct(dbOps, context)
@@ -22,18 +34,16 @@ func InitProductRoutes(router *gin.RouterGroup, dbOps db.DatabaseOperations) {
 	})
 }
 
-// InitIntegrationRoutes initializes the integration routes for the given router group.
-// It sets up the POST and GET endpoints for creating and retrieving integrations.
+// InitRelationRoutes initializes the relation routes for the given router group.
+// It sets up the POST and GET endpoints for creating and retrieving relationships.
 //
 // Parameters:
-//
-//	router (*gin.RouterGroup): The router group to which the routes will be added.
-//	dbOps (db.DatabaseOperations): The database operations interface used for database interactions.
+// - router: The router group to which the routes will be added.
+// - dbOps: The database operations interface used for database interactions.
 //
 // Routes:
-//
-//	POST /integration: Calls CreateIntegration to handle the creation of a new integration.
-//	GET /integration/:id: Calls GetIntegration to handle retrieving an integration by ID.
+// - POST /relation: Calls CreateRelationship to handle the creation of a new relationship.
+// - GET /relation/:id: Calls GetRelationship to handle retrieving a relationship by ID.
 func InitRelationRoutes(router *gin.RouterGroup, dbOps db.DatabaseOperations) {
 	router.POST("/relation", func(context *gin.Context) {
 		handlers.CreateRelationship(dbOps, context)
@@ -43,6 +53,16 @@ func InitRelationRoutes(router *gin.RouterGroup, dbOps db.DatabaseOperations) {
 	})
 }
 
+// InitRuleRoutes initializes the rule routes for the given router group.
+// It sets up the POST and GET endpoints for creating and retrieving results rules.
+//
+// Parameters:
+// - router: The router group to which the routes will be added.
+// - dbOps: The database operations interface used for database interactions.
+//
+// Routes:
+// - POST /results-rule: Calls CreateResultsRule to handle the creation of a new results rule.
+// - GET /results-rule/:id: Calls GetResultsRule to handle retrieving a results rule by ID.
 func InitRuleRoutes(router *gin.RouterGroup, dbOps db.DatabaseOperations) {
 	router.POST("/results-rule", func(context *gin.Context) {
 		handlers.CreateResultsRule(dbOps, context)

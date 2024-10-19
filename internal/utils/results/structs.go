@@ -1,5 +1,6 @@
 package results
 
+// JUnitTestSuites represents a collection of JUnit test suites.
 type JUnitTestSuites struct {
 	Name       string           `xml:"name,attr"`
 	Tests      int              `xml:"tests,attr"`
@@ -12,6 +13,7 @@ type JUnitTestSuites struct {
 	TestSuites []JUnitTestSuite `xml:"testsuite"`
 }
 
+// JUnitTestSuite represents a single JUnit test suite.
 type JUnitTestSuite struct {
 	ID         string          `xml:"id,attr"`
 	Name       string          `xml:"name,attr"`
@@ -28,6 +30,7 @@ type JUnitTestSuite struct {
 	SystemErr  string          `xml:"system-err,omitempty"`
 }
 
+// JUnitTestCase represents a single JUnit test case.
 type JUnitTestCase struct {
 	ID         string     `xml:"id,attr"`
 	ClassName  string     `xml:"classname,attr"`
@@ -45,20 +48,24 @@ type JUnitTestCase struct {
 	SystemErr  string     `xml:"system-err,omitempty"`
 }
 
+// Failure represents a failure in a JUnit test case.
 type Failure struct {
 	Message string `xml:"message,attr"`
 	Type    string `xml:"type,attr"`
 }
 
+// Error represents an error in a JUnit test case.
 type Error struct {
 	Message string `xml:"message,attr"`
 	Type    string `xml:"type,attr"`
 }
 
+// Skipped represents a skipped JUnit test case.
 type Skipped struct {
 	Message string `xml:"message,attr"`
 }
 
+// Property represents a property of a JUnit test case or test suite.
 type Property struct {
 	Name  string `xml:"name,attr"`
 	Value string `xml:"value,attr,omitempty"`

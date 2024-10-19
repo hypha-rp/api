@@ -60,8 +60,8 @@ func GetResultsByIntegrationID(dbOps db.DatabaseOperations, context *gin.Context
 // It fetches the results and associated test suites, test cases, and properties from the database.
 //
 // Parameters:
-// - c: The Gin context for the current request.
 // - dbOps: The database operations interface for interacting with the database.
+// - context: The Gin context for the current request.
 func GetResultsByProductID(dbOps db.DatabaseOperations, context *gin.Context) {
 	productId := context.Param("productId")
 	if productId == "" {
@@ -90,8 +90,8 @@ func GetResultsByProductID(dbOps db.DatabaseOperations, context *gin.Context) {
 // It processes the uploaded JUnit XML file, parses the results, and stores them in the database.
 //
 // Parameters:
-// - c: The Gin context for the current request.
 // - dbOps: The database operations interface for interacting with the database.
+// - context: The Gin context for the current request.
 func ReportResults(dpOps db.DatabaseOperations, context *gin.Context) {
 	var junitTestSuites results.JUnitTestSuites
 	var product db.Product

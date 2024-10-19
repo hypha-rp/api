@@ -2,7 +2,7 @@ package db
 
 import "time"
 
-// General Models
+// Product represents a product with its details and relationships.
 type Product struct {
 	ID            string         `gorm:"type:uuid;primaryKey" json:"id"`
 	FullName      string         `json:"fullName"`
@@ -11,13 +11,14 @@ type Product struct {
 	Relationships []Relationship `gorm:"foreignKey:ObjectIDs;references:ID" json:"relationships"`
 }
 
-// Relationship Models
+// Relationship represents a relationship between two objects.
 type Relationship struct {
 	RelationID       string   `gorm:"type:uuid;primaryKey" json:"relationID"`
 	ObjectIDs        []string `gorm:"type:text[]" json:"objectIDs"` // List of two IDs
 	RelationshipType string   `json:"relationshipType"`             // e.g., "integration", "dependency", etc.
 }
 
+// Integration represents an integration between two products.
 type Integration struct {
 	ID         string  `gorm:"type:uuid;primaryKey" json:"id"`
 	ProductID1 string  `gorm:"type:uuid" json:"productID1"`
@@ -26,7 +27,7 @@ type Integration struct {
 	Product2   Product `gorm:"foreignKey:ProductID2"`
 }
 
-// Test Result Models
+// Result represents a test result for a product.
 type Result struct {
 	ID           string      `gorm:"type:uuid;primaryKey" json:"id"`
 	ProductID    string      `json:"productID"`
@@ -34,6 +35,7 @@ type Result struct {
 	DateReported time.Time   `json:"dateReported"`
 }
 
+// TestSuite represents a suite of tests within a test result.
 type TestSuite struct {
 	ID         string     `gorm:"type:uuid;primaryKey" json:"id"`
 	ResultID   string     `json:"resultID"`
@@ -51,6 +53,7 @@ type TestSuite struct {
 	SystemErr  string     `json:"systemErr"`
 }
 
+// TestCase represents an individual test case within a test suite.
 type TestCase struct {
 	ID          string     `gorm:"type:uuid;primaryKey" json:"id"`
 	TestSuiteID string     `json:"testSuiteID"`
@@ -68,6 +71,7 @@ type TestCase struct {
 	SystemErr   string     `json:"systemErr"`
 }
 
+// Property represents a property associated with a test suite or test case.
 type Property struct {
 	ID          string  `gorm:"type:uuid;primaryKey" json:"id"`
 	TestSuiteID *string `json:"testSuiteID"`
@@ -76,7 +80,7 @@ type Property struct {
 	Value       string  `json:"value"`
 }
 
-// Rule Models
+// ResultsRule represents a rule applied to test results.
 type ResultsRule struct {
 	ID         string       `gorm:"type:uuid;primaryKey" json:"id"`
 	ProductID  string       `gorm:"type:uuid" json:"productID"`

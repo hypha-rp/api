@@ -10,6 +10,12 @@ import (
 
 var log = logging.Logger
 
+// InitRoutes initializes all the routes for the given router engine.
+// It sets up the database-related routes and results-related routes.
+//
+// Parameters:
+// - router: The Gin engine to which the routes will be added.
+// - dbOps: The database operations interface used for database interactions.
 func InitRoutes(router *gin.Engine, dbOps db.DatabaseOperations) {
 	log.Info().Msg("Initializing routes")
 

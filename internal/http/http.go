@@ -18,6 +18,7 @@ func InitRoutes(router *gin.Engine, dbOperations db.DatabaseOperations) {
 	dbGroup := router.Group("/db")
 	db_group.InitProductRoutes(dbGroup, dbOperations)
 	db_group.InitIntegrationRoutes(dbGroup, dbOperations)
+	db_group.InitRuleRoutes(dbGroup, dbOperations)
 
 	resultsGroup := router.Group("/results")
 	results.InitResultsRoutes(resultsGroup, dbOperations)

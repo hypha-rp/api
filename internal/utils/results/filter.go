@@ -1,177 +1,132 @@
 package results
 
 import (
-	"hypha/api/internal/db"
+	"hypha/api/internal/db/tables"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-orm/gorm"
+	"github.com/lib/pq"
 	"github.com/rs/zerolog/log"
 )
 
-// CreateResultMap creates a map of result IDs to their corresponding test suites.
+// FetchResultsByRules fetches test suites and test cases from the database based on the provided rules.
+// It filters the fetched data according to the specified expressions in the rules and returns the results.
 //
 // Parameters:
-// - testSuites: A slice of TestSuite objects.
+// - dbConn: A connection to the database.
+// - rules: A slice of pointers to ResultsRule, which contains the rules for fetching and filtering the data.
 //
 // Returns:
-// - map[string][]db.TestSuite: A map where the keys are result IDs and the values are slices of TestSuite objects.
-func CreateResultMap(testSuites []db.TestSuite) map[string][]db.TestSuite {
-	resultMap := make(map[string][]db.TestSuite)
-	for _, testSuite := range testSuites {
-		resultID := testSuite.ResultID
-		resultMap[resultID] = append(resultMap[resultID], testSuite)
-	}
-	return resultMap
-}
-
-// FetchResultsAndProducts fetches results and their associated products from the database.
-//
-// Parameters:
-// - dbConn: The GORM database connection.
-// - resultMap: A map of result IDs to their corresponding test suites.
-//
-// Returns:
-// - []gin.H: A slice of Gin H maps containing result and product information.
-// - error: An error if any database operation fails.
-func FetchResultsAndProducts(dbConn *gorm.DB, resultMap map[string][]db.TestSuite) ([]gin.H, error) {
+// - A slice of gin.H containing the filtered test suites and their associated test cases.
+// - An error if any occurs during the database operations.
+func FetchResultsByRules(dbConn *gorm.DB, rules []*tables.ResultsRule) ([]gin.H, error) {
 	var results []gin.H
-	for resultID, testSuites := range resultMap {
-		var result db.Result
-		err := dbConn.Where("id = ?", resultID).First(&result).Error
-		if err != nil {
-			return nil, err
-		}
-		result.TestSuites = testSuites
 
-		var product db.Product
-		err = dbConn.Where("id = ?", result.ProductID).First(&product).Error
-		if err != nil {
-			return nil, err
+	for _, rule := range rules {
+		var testSuites []tables.TestSuite
+		var testCases []tables.TestCase
+
+		if contains(rule.AppliesTo, "suites") {
+			if err := dbConn.Where("product_id = ANY(?)", pq.Array(rule.Relationship.ObjectIDs)).Find(&testSuites).Error; err != nil {
+				log.Error().Err(err).Msg("Failed to fetch test suites")
+				return nil, err
+			}
 		}
 
-		results = append(results, gin.H{
-			"id":           result.ID,
-			"productID":    result.ProductID,
-			"productName":  product.FullName,
-			"TestSuites":   result.TestSuites,
-			"dateReported": result.DateReported,
-		})
+		if contains(rule.AppliesTo, "cases") {
+			if err := dbConn.Where("product_id = ANY(?)", pq.Array(rule.Relationship.ObjectIDs)).Find(&testCases).Error; err != nil {
+				log.Error().Err(err).Msg("Failed to fetch test cases")
+				return nil, err
+			}
+		}
+
+		filteredSuites := filterTestSuites(testSuites, rule.Expression)
+		filteredCases := filterTestCases(testCases, rule.Expression)
+
+		suiteMap := make(map[string][]tables.TestCase)
+		for _, testCase := range filteredCases {
+			suiteMap[testCase.TestSuiteID] = append(suiteMap[testCase.TestSuiteID], testCase)
+		}
+
+		for _, suite := range filteredSuites {
+			if cases, exists := suiteMap[suite.ID]; exists {
+				suite.TestCases = cases
+			}
+			results = append(results, gin.H{
+				"suite": suite,
+			})
+		}
 	}
+
 	return results, nil
 }
 
-// GetTestSuiteAndCaseIDs retrieves test suite and test case IDs associated with a given integration ID.
+// contains checks if a slice contains a specific item.
 //
 // Parameters:
-// - db: The GORM database connection.
-// - integrationID: The integration ID to filter by.
+// - slice: A slice of strings to search within.
+// - item: The string to search for.
 //
 // Returns:
-// - []string: A slice of test suite IDs.
-// - []string: A slice of test case IDs.
-// - error: An error if any database operation fails.
-func GetTestSuiteAndCaseIDs(db *gorm.DB, integrationID string) ([]string, []string, error) {
-	var testSuiteIDs []string
-	var testCaseIDs []string
-
-	err := db.Table("properties").
-		Where("properties.name = ? AND properties.value::text = ? AND properties.test_suite_id IS NOT NULL", "hypha.integration", integrationID).
-		Pluck("test_suite_id::text", &testSuiteIDs).Error
-
-	if err != nil {
-		log.Error().Msgf("Database query error in getTestSuiteAndCaseIDs (test_suite_ids): %v", err)
-		return nil, nil, err
-	}
-
-	err = db.Table("properties").
-		Where("properties.name = ? AND properties.value::text = ? AND properties.test_case_id IS NOT NULL", "hypha.integration", integrationID).
-		Pluck("test_case_id::text", &testCaseIDs).Error
-
-	if err != nil {
-		log.Error().Msgf("Database query error in getTestSuiteAndCaseIDs (test_case_ids): %v", err)
-		return nil, nil, err
-	}
-
-	if len(testSuiteIDs) > 0 {
-		err = db.Table("test_cases").
-			Where("test_suite_id IN (?)", testSuiteIDs).
-			Pluck("id::text", &testCaseIDs).Error
-
-		if err != nil {
-			log.Error().Msgf("Database query error in getTestSuiteAndCaseIDs (test_cases for suites): %v", err)
-			return nil, nil, err
+// - A boolean indicating whether the item is found in the slice.
+func contains(slice []string, item string) bool {
+	for _, v := range slice {
+		if v == item {
+			return true
 		}
 	}
-
-	if len(testSuiteIDs) > 0 {
-		err = db.Table("properties").
-			Where("properties.name = ? AND properties.value::text = ? AND properties.test_suite_id IN (?) AND properties.test_case_id IS NOT NULL", "hypha.integration", integrationID, testSuiteIDs).
-			Pluck("test_case_id::text", &testCaseIDs).Error
-
-		if err != nil {
-			log.Error().Msgf("Database query error in getTestSuiteAndCaseIDs (test_case_ids for suites): %v", err)
-			return nil, nil, err
-		}
-	}
-
-	return testSuiteIDs, testCaseIDs, nil
+	return false
 }
 
-// GetTestSuites retrieves test suites and their associated test cases and properties from the database.
+// filterTestSuites filters test suites based on the provided expression.
 //
 // Parameters:
-// - dbConn: The GORM database connection.
-// - testSuiteIDs: A slice of test suite IDs to filter by.
-// - testCaseIDs: A slice of test case IDs to filter by.
+// - suites: A slice of TestSuite to filter.
+// - expression: A string expression to filter the test suites by.
 //
 // Returns:
-// - []db.TestSuite: A slice of TestSuite objects.
-// - error: An error if any database operation fails.
-func GetTestSuites(dbConn *gorm.DB, testSuiteIDs, testCaseIDs []string) ([]db.TestSuite, error) {
-	var testSuites []db.TestSuite
-
-	err := dbConn.Where("id::text IN (?) OR id::text IN (SELECT test_suite_id::text FROM test_cases WHERE id::text IN (?))", testSuiteIDs, testCaseIDs).
-		Preload("TestCases").
-		Preload("TestCases.Properties").
-		Preload("Properties").
-		Find(&testSuites).Error
-
-	if err != nil {
-		return nil, err
+// - A slice of TestSuite that match the expression.
+func filterTestSuites(suites []tables.TestSuite, expression string) []tables.TestSuite {
+	var filtered []tables.TestSuite
+	for _, suite := range suites {
+		if matchesExpression(suite.Name, expression) {
+			filtered = append(filtered, suite)
+		}
 	}
-
-	return testSuites, nil
+	return filtered
 }
 
-// FilterTestCases filters test cases within test suites based on the integration ID.
+// filterTestCases filters test cases based on the provided expression.
 //
 // Parameters:
-// - testSuites: A slice of TestSuite objects to filter.
-// - integrationID: The integration ID to filter by.
-func FilterTestCases(testSuites []db.TestSuite, integrationID string) {
-	for i := range testSuites {
-		var filteredTestCases []db.TestCase
-		suiteHasIntegration := false
-
-		for _, property := range testSuites[i].Properties {
-			if property.Name == "hypha.integration" && property.Value == integrationID {
-				suiteHasIntegration = true
-				break
-			}
+// - cases: A slice of TestCase to filter.
+// - expression: A string expression to filter the test cases by.
+//
+// Returns:
+// - A slice of TestCase that match the expression.
+func filterTestCases(cases []tables.TestCase, expression string) []tables.TestCase {
+	var filtered []tables.TestCase
+	for _, testCase := range cases {
+		if matchesExpression(testCase.Name, expression) {
+			filtered = append(filtered, testCase)
 		}
-
-		for _, testCase := range testSuites[i].TestCases {
-			caseHasIntegration := false
-			for _, property := range testCase.Properties {
-				if property.Name == "hypha.integration" && property.Value == integrationID {
-					caseHasIntegration = true
-					break
-				}
-			}
-			if caseHasIntegration || suiteHasIntegration {
-				filteredTestCases = append(filteredTestCases, testCase)
-			}
-		}
-		testSuites[i].TestCases = filteredTestCases
 	}
+	return filtered
+}
+
+// matchesExpression checks if a name matches the provided expression.
+// If the expression starts with '!', it negates the match.
+//
+// Parameters:
+// - name: The name to check against the expression.
+// - expression: The expression to match the name against.
+//
+// Returns:
+// - A boolean indicating whether the name matches the expression.
+func matchesExpression(name, expression string) bool {
+	if strings.HasPrefix(expression, "!") {
+		return !strings.HasPrefix(name, expression[1:])
+	}
+	return strings.HasPrefix(name, expression)
 }

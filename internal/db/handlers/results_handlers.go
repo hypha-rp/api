@@ -3,6 +3,8 @@ package handlers
 import (
 	"encoding/xml"
 	"hypha/api/internal/db"
+	"hypha/api/internal/db/tables"
+	"hypha/api/internal/utils/db/queries"
 	"hypha/api/internal/utils/results"
 	"io"
 	"net/http"
@@ -10,44 +12,29 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// GetResultsByIntegrationID retrieves test results based on the integration ID.
+// GetResultsByRelationID retrieves test results based on the relation ID.
 // It fetches the test suite and test case IDs, retrieves the test suites, filters the test cases,
 // and fetches the results and associated products from the database.
 //
 // Parameters:
 // - dbOps: The database operations interface for interacting with the database.
 // - context: The Gin context for the current request.
-func GetResultsByIntegrationID(dbOps db.DatabaseOperations, context *gin.Context) {
-	integrationID := context.Param("id")
-	if integrationID == "" {
-		context.JSON(http.StatusBadRequest, gin.H{"error": "integration ID is required"})
-		return
-	}
-
+func GetResultsByRelationID(dbOps db.DatabaseOperations, context *gin.Context) {
+	relationID := context.Param("id")
 	db := dbOps.Connection()
 
-	testSuiteIDs, testCaseIDs, err := results.GetTestSuiteAndCaseIDs(db, integrationID)
+	if relationID == "" {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "relation ID is required"})
+		return
+	}
+
+	rules, err := queries.FetchRulesByRelationID(dbOps, relationID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 
-	if len(testSuiteIDs) == 0 && len(testCaseIDs) == 0 {
-		context.JSON(http.StatusNotFound, gin.H{"error": "No test suites or test cases found for the given integration ID"})
-		return
-	}
-
-	testSuites, err := results.GetTestSuites(db, testSuiteIDs, testCaseIDs)
-	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
-		return
-	}
-
-	results.FilterTestCases(testSuites, integrationID)
-
-	resultMap := results.CreateResultMap(testSuites)
-
-	results, err := results.FetchResultsAndProducts(db, resultMap)
+	results, err := results.FetchResultsByRules(db, rules)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
@@ -69,7 +56,7 @@ func GetResultsByProductID(dbOps db.DatabaseOperations, context *gin.Context) {
 		return
 	}
 
-	var results []db.Result
+	var results []tables.Result
 
 	db := dbOps.Connection()
 
@@ -94,7 +81,7 @@ func GetResultsByProductID(dbOps db.DatabaseOperations, context *gin.Context) {
 // - context: The Gin context for the current request.
 func ReportResults(dpOps db.DatabaseOperations, context *gin.Context) {
 	var junitTestSuites results.JUnitTestSuites
-	var product db.Product
+	var product tables.Product
 
 	productId := context.PostForm("productId")
 	if productId == "" {

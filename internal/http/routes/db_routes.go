@@ -34,7 +34,7 @@ func InitProductRoutes(router *gin.RouterGroup, dbOps db.DatabaseOperations) {
 	})
 }
 
-// InitRelationRoutes initializes the relation routes for the given router group.
+// InitRelationshipRoutes initializes the relation routes for the given router group.
 // It sets up the POST and GET endpoints for creating and retrieving relationships.
 //
 // Parameters:
@@ -42,13 +42,13 @@ func InitProductRoutes(router *gin.RouterGroup, dbOps db.DatabaseOperations) {
 // - dbOps: The database operations interface used for database interactions.
 //
 // Routes:
-// - POST /relation: Calls CreateRelationship to handle the creation of a new relationship.
-// - GET /relation/:id: Calls GetRelationship to handle retrieving a relationship by ID.
-func InitRelationRoutes(router *gin.RouterGroup, dbOps db.DatabaseOperations) {
-	router.POST("/relation", func(context *gin.Context) {
+// - POST /relationship: Calls CreateRelationship to handle the creation of a new relationship.
+// - GET /relationship/:id: Calls GetRelationship to handle retrieving a relationship by ID.
+func InitRelationshipRoutes(router *gin.RouterGroup, dbOps db.DatabaseOperations) {
+	router.POST("/relationship", func(context *gin.Context) {
 		handlers.CreateRelationship(dbOps, context)
 	})
-	router.GET("/relation/:id", func(context *gin.Context) {
+	router.GET("/relationship/:id", func(context *gin.Context) {
 		handlers.GetRelationship(dbOps, context)
 	})
 }
@@ -63,11 +63,15 @@ func InitRelationRoutes(router *gin.RouterGroup, dbOps db.DatabaseOperations) {
 // Routes:
 // - POST /results-rule: Calls CreateResultsRule to handle the creation of a new results rule.
 // - GET /results-rule/:id: Calls GetResultsRule to handle retrieving a results rule by ID.
+// - GET /results-rule/relation/:id: Calls GetRulesByRelationIDto handle retrieving results rules using a relation ID
 func InitRuleRoutes(router *gin.RouterGroup, dbOps db.DatabaseOperations) {
 	router.POST("/results-rule", func(context *gin.Context) {
 		handlers.CreateResultsRule(dbOps, context)
 	})
 	router.GET("/results-rule/:id", func(context *gin.Context) {
 		handlers.GetResultsRule(dbOps, context)
+	})
+	router.GET("/results-rule/relation/:id", func(context *gin.Context) {
+		handlers.GetRulesByRelationID(dbOps, context)
 	})
 }

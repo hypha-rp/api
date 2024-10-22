@@ -3,6 +3,7 @@ package db
 import (
 	"fmt"
 	"hypha/api/internal/config"
+	"hypha/api/internal/db/tables"
 	"hypha/api/internal/utils/logging"
 
 	"github.com/go-orm/gorm"
@@ -71,12 +72,13 @@ func Connect(cfg *config.Config) (*gorm.DB, error) {
 }
 
 var tables_slice = []interface{}{
-	&Product{},
-	&Integration{},
-	&Result{},
-	&TestSuite{},
-	&TestCase{},
-	&Property{},
+	&tables.Product{},
+	&tables.Relationship{},
+	&tables.Result{},
+	&tables.TestSuite{},
+	&tables.TestCase{},
+	&tables.Property{},
+	&tables.ResultsRule{},
 }
 
 // AutoMigrate performs database migration for all the tables defined in tables_slice.

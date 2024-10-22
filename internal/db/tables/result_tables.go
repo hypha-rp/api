@@ -1,31 +1,8 @@
-package db
+package tables
 
-import "time"
-
-// Product represents a product with its details and relationships.
-type Product struct {
-	ID            string         `gorm:"type:uuid;primaryKey" json:"id"`
-	FullName      string         `json:"fullName"`
-	ShortName     string         `json:"shortName"`
-	ContactEmail  string         `json:"contactEmail"`
-	Relationships []Relationship `gorm:"foreignKey:ObjectIDs;references:ID" json:"relationships"`
-}
-
-// Relationship represents a relationship between two objects.
-type Relationship struct {
-	RelationID       string   `gorm:"type:uuid;primaryKey" json:"relationID"`
-	ObjectIDs        []string `gorm:"type:text[]" json:"objectIDs"` // List of two IDs
-	RelationshipType string   `json:"relationshipType"`             // e.g., "integration", "dependency", etc.
-}
-
-// Integration represents an integration between two products.
-type Integration struct {
-	ID         string  `gorm:"type:uuid;primaryKey" json:"id"`
-	ProductID1 string  `gorm:"type:uuid" json:"productID1"`
-	ProductID2 string  `gorm:"type:uuid" json:"productID2"`
-	Product1   Product `gorm:"foreignKey:ProductID1"`
-	Product2   Product `gorm:"foreignKey:ProductID2"`
-}
+import (
+	"time"
+)
 
 // Result represents a test result for a product.
 type Result struct {
@@ -78,17 +55,4 @@ type Property struct {
 	TestCaseID  *string `json:"testCaseID"`
 	Name        string  `json:"name"`
 	Value       string  `json:"value"`
-}
-
-// ResultsRule represents a rule applied to test results.
-type ResultsRule struct {
-	ID         string       `gorm:"type:uuid;primaryKey" json:"id"`
-	ProductID  string       `gorm:"type:uuid" json:"productID"`
-	Expression string       `json:"expression"`
-	AppliesTo  []string     `gorm:"type:text[]" json:"appliesTo"` // List of types: TestSuite, TestCase, Property, All
-	RelationID string       `gorm:"type:uuid" json:"relationID"`
-	CreatedAt  time.Time    `json:"createdAt"`
-	UpdatedAt  time.Time    `json:"updatedAt"`
-	Product    Product      `gorm:"foreignKey:ProductID"`
-	Relation   Relationship `gorm:"foreignKey:RelationID"`
 }

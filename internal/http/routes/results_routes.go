@@ -19,8 +19,8 @@ import (
 // - GET /product/:productId: Calls GetResultsByProductID to handle retrieving results by product ID.
 // - POST /results: Calls ReportResults to handle reporting new results.
 func InitResultsRoutes(router *gin.RouterGroup, dpOps db.DatabaseOperations) {
-	router.GET("/integration/:id", func(context *gin.Context) {
-		handlers.GetResultsByIntegrationID(dpOps, context)
+	router.GET("/relationship/:id", func(context *gin.Context) {
+		handlers.GetResultsByRelationID(dpOps, context)
 	})
 	router.GET("/product/:productId", func(context *gin.Context) {
 		handlers.GetResultsByProductID(dpOps, context)

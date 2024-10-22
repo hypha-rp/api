@@ -3,6 +3,7 @@ package results
 import (
 	"bytes"
 	"hypha/api/internal/db"
+	"hypha/api/internal/db/tables"
 	"strings"
 	"time"
 )
@@ -130,10 +131,10 @@ func trimLeadingWhitespace(text string) string {
 // - productId: The ID of the product for which the result is being created.
 //
 // Returns:
-// - db.Result: The created Result model.
+// - tables.Result: The created Result model.
 // - error: An error if there is any issue during the creation of the model.
-func createResultModel(productId string) (db.Result, error) {
-	return db.Result{
+func createResultModel(productId string) (tables.Result, error) {
+	return tables.Result{
 		ID:           db.GenerateUniqueID(),
 		ProductID:    productId,
 		DateReported: time.Now().UTC(),
@@ -148,10 +149,10 @@ func createResultModel(productId string) (db.Result, error) {
 // - resultID: The ID of the associated result.
 //
 // Returns:
-// - db.TestSuite: The created TestSuite model.
+// - tables.TestSuite: The created TestSuite model.
 // - error: An error if there is any issue during the creation of the model.
-func createTestSuiteModel(suite JUnitTestSuite, resultID string) (db.TestSuite, error) {
-	return db.TestSuite{
+func createTestSuiteModel(suite JUnitTestSuite, resultID string) (tables.TestSuite, error) {
+	return tables.TestSuite{
 		ID:         db.GenerateUniqueID(),
 		ResultID:   resultID,
 		Name:       suite.Name,
@@ -183,7 +184,7 @@ func createAndSaveProperties(properties []Property, testSuiteID string, dbOps db
 		if value == "" {
 			value = trimLeadingWhitespace(property.Text)
 		}
-		propertyModel := db.Property{
+		propertyModel := tables.Property{
 			ID:          db.GenerateUniqueID(),
 			TestSuiteID: &testSuiteID,
 			Name:        property.Name,
@@ -232,12 +233,12 @@ func createAndSaveTestCases(testCases []JUnitTestCase, testSuiteID string, dbOps
 // - testSuiteID: The ID of the associated test suite.
 //
 // Returns:
-// - db.TestCase: The created TestCase model.
+// - tables.TestCase: The created TestCase model.
 // - error: An error if there is any issue during the creation of the model.
-func createTestCaseModel(testCase JUnitTestCase, testSuiteID string) (db.TestCase, error) {
+func createTestCaseModel(testCase JUnitTestCase, testSuiteID string) (tables.TestCase, error) {
 	status, message, testCaseType := determineTestCaseStatus(testCase)
 
-	return db.TestCase{
+	return tables.TestCase{
 		ID:          db.GenerateUniqueID(),
 		TestSuiteID: testSuiteID,
 		ClassName:   testCase.ClassName,
@@ -302,7 +303,7 @@ func createAndSaveTestCaseProperties(properties []Property, testCaseID string, d
 		if value == "" {
 			value = trimLeadingWhitespace(property.Text)
 		}
-		propertyModel := db.Property{
+		propertyModel := tables.Property{
 			ID:         db.GenerateUniqueID(),
 			TestCaseID: &testCaseID,
 			Name:       property.Name,

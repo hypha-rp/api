@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"hypha/api/internal/db"
+	"hypha/api/internal/db/tables"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,7 +21,7 @@ import (
 // Responses:
 // - 201 Created: If the product is successfully created.
 func CreateProduct(dbOps db.DatabaseOperations, context *gin.Context) {
-	var newProduct db.Product
+	var newProduct tables.Product
 	newProduct.ID = db.GenerateUniqueID()
 	db.CreateResource(dbOps, context, &newProduct)
 }
@@ -37,7 +39,7 @@ func CreateProduct(dbOps db.DatabaseOperations, context *gin.Context) {
 // Responses:
 // - 200 OK: If the product is successfully retrieved, returns the product object.
 func GetProduct(dbOps db.DatabaseOperations, context *gin.Context) {
-	var existingProduct db.Product
+	var existingProduct tables.Product
 	db.GetResource(dbOps, context, &existingProduct, "id", "Product")
 }
 
@@ -54,17 +56,29 @@ func GetProduct(dbOps db.DatabaseOperations, context *gin.Context) {
 // Responses:
 // - 200 OK: If the integrations are successfully retrieved, returns the integrations object.
 func GetProductIntegrations(dbOps db.DatabaseOperations, context *gin.Context) {
-	var integrations []db.Integration
+	var integrations []tables.Relationship
 	productID := context.Param("id")
 	if err := dbOps.Connection().
-		Where("product_id1 = ? OR product_id2 = ?", productID, productID).
-		Preload("Product1").
-		Preload("Product2").
+		Where("relationship_type = ? AND ? = ANY(object_ids)", "integration", productID).
 		Find(&integrations).Error; err != nil {
-		context.JSON(500, gin.H{"error": err.Error()})
+		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
-	context.JSON(200, integrations)
+
+	for i, integration := range integrations {
+		var objects []tables.ObjectInterface
+		for _, objectID := range integration.ObjectIDs {
+			var product tables.Product
+			if err := dbOps.Connection().Where("id = ?", objectID).First(&product).Error; err == nil {
+				objects = append(objects, product)
+				continue
+			}
+			context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+			return
+		}
+		integrations[i].Objects = objects
+	}
+	context.JSON(http.StatusOK, integrations)
 }
 
 // GetAllProducts retrieves all products, optionally filtered by name.
@@ -80,7 +94,7 @@ func GetProductIntegrations(dbOps db.DatabaseOperations, context *gin.Context) {
 // Responses:
 // - 200 OK: If the products are successfully retrieved, returns the products object.
 func GetAllProducts(dbOps db.DatabaseOperations, context *gin.Context) {
-	var products []db.Product
+	var products []tables.Product
 	name := context.Query("name")
 	query := dbOps.Connection()
 	if name != "" {

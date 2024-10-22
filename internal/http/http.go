@@ -21,7 +21,7 @@ func InitRoutes(router *gin.Engine, dbOps db.DatabaseOperations) {
 
 	dbGroup := router.Group("/db")
 	routes.InitProductRoutes(dbGroup, dbOps)
-	routes.InitRelationRoutes(dbGroup, dbOps)
+	routes.InitRelationshipRoutes(dbGroup, dbOps)
 	routes.InitRuleRoutes(dbGroup, dbOps)
 
 	resultsGroup := router.Group("/results")

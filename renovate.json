@@ -7,11 +7,13 @@
       "matchPackagePatterns": ["*"],
       "groupName": "all dependencies",
       "groupSlug": "all-dependencies",
-      "schedule": ["at any time"]
+      "schedule": ["at any time"],
+      "separateMinorPatch": true
     }
   ],
   "automerge": false,
-    "labels": ["dependencies, maintenance"],
-    "prHourlyLimit": 2,
-    "prConcurrentLimit": 10
+  "labels": ["dependencies, maintenance"],
+  "prHourlyLimit": 2,
+  "prConcurrentLimit": 10,
+  "baseBranches": ["development"]
 }

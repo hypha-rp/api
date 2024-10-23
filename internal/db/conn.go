@@ -1,6 +1,7 @@
 package db
 
 import (
+	"embed"
 	"fmt"
 	"hypha/api/internal/config"
 	"hypha/api/internal/db/tables"
@@ -11,6 +12,9 @@ import (
 )
 
 var log = logging.Logger
+
+//go:embed views/test_results_view.sql
+var test_results_view embed.FS
 
 var (
 	// DBConn is the global database connection.
@@ -97,7 +101,37 @@ func AutoMigrate(db *gorm.DB) error {
 			return err
 		}
 	}
+	createViews(db)
 	log.Info().Msg("Database migration completed successfully")
+	return nil
+}
+
+// CreateViews reads SQL files from the assets package and executes them to create views in the database.
+// It returns any error encountered during the execution.
+//
+// Parameters:
+//   - db: A pointer to the gorm.DB connection.
+//
+// Returns:
+//   - error: An error object if the execution fails, otherwise nil.
+func createViews(db *gorm.DB) error {
+
+	log.Info().Msg("Creating test_results_view")
+
+	// Read the embedded SQL file
+	content, err := test_results_view.ReadFile("views/test_results_view.sql")
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to read embedded SQL file: test_results_view.sql")
+		return err
+	}
+
+	// Execute the SQL content
+	if err := db.Exec(string(content)).Error; err != nil {
+		log.Error().Err(err).Msg("Failed to execute SQL file: test_results_view.sql")
+		return err
+	}
+
+	log.Info().Msg("Successfully created test_results_view")
 	return nil
 }
 

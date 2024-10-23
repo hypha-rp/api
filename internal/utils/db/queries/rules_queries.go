@@ -16,7 +16,7 @@ import (
 // - error: An error if any database operation fails.
 func FetchRulesByRelationID(dbOps db.DatabaseOperations, relationID string) ([]*tables.ResultsRule, error) {
 	var rules []*tables.ResultsRule
-	err := dbOps.Connection().Where("relationship_id = ?", relationID).Find(&rules).Error
+	err := dbOps.Connection().Preload("Relationship").Where("relationship_id = ?", relationID).Find(&rules).Error
 	if err != nil {
 		return nil, err
 	}

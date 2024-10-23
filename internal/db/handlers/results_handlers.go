@@ -34,7 +34,7 @@ func GetResultsByRelationID(dbOps db.DatabaseOperations, context *gin.Context) {
 		return
 	}
 
-	results, err := results.FetchResultsByRules(db, rules)
+	results, err := queries.FetchResultsByRules(db, rules)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return

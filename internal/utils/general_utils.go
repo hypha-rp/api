@@ -2,7 +2,7 @@ package utils
 
 import "strings"
 
-// contains checks if a slice contains a specific item.
+// Contains checks if a slice contains a specific item.
 //
 // Parameters:
 // - slice: A slice of strings to search within.
@@ -19,18 +19,40 @@ func Contains(slice []string, item string) bool {
 	return false
 }
 
-// matchesExpression checks if a name matches the provided expression.
+// MatchesExpression checks if a value matches the provided expression.
 // If the expression starts with '!', it negates the match.
+// Supports wildcard '*' for matching any sequence of characters.
 //
 // Parameters:
-// - name: The name to check against the expression.
-// - expression: The expression to match the name against.
+// - value: The value to check against the expression.
+// - expression: The expression to match the value against.
 //
 // Returns:
-// - A boolean indicating whether the name matches the expression.
+// - A boolean indicating whether the value matches the expression.
 func MatchesExpression(value, expression string) bool {
 	if strings.HasPrefix(expression, "!") {
-		return !strings.HasPrefix(value, expression[1:])
+		return !MatchesWildcard(value, expression[1:])
 	}
-	return strings.HasPrefix(value, expression)
+	return MatchesWildcard(value, expression)
+}
+
+// matchesWildcard checks if a value matches a wildcard pattern.
+// Supports '*' as a wildcard character.
+//
+// Parameters:
+// - value: The value to check against the pattern.
+// - pattern: The wildcard pattern to match the value against.
+//
+// Returns:
+// - A boolean indicating whether the value matches the pattern.
+func MatchesWildcard(value, pattern string) bool {
+	parts := strings.Split(pattern, "*")
+	for _, part := range parts {
+		idx := strings.Index(value, part)
+		if idx == -1 {
+			return false
+		}
+		value = value[idx+len(part):]
+	}
+	return true
 }

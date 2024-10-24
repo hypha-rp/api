@@ -17,6 +17,9 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.semantic-release.outputs.version }}
+      major-version: ${{ steps.semantic-release.outputs.major-version }}
+      minor-version: ${{ steps.semantic-release.outputs.minor-version }}
+      sha: ${{ steps.semantic-release.outputs.sha }}
     steps:
       - name: Semantic Release
         id: semantic-release

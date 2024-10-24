@@ -19,7 +19,6 @@ jobs:
       version: ${{ steps.semantic-release.outputs.version }}
       major-version: ${{ steps.semantic-release.outputs.major-version }}
       minor-version: ${{ steps.semantic-release.outputs.minor-version }}
-      sha: ${{ steps.semantic-release.outputs.sha }}
     steps:
       - name: Semantic Release
         id: semantic-release
@@ -66,7 +65,6 @@ jobs:
             ghcr.io/${{ github.repository }}:${{ needs.version.outputs.version }}
             ghcr.io/${{ github.repository }}:${{ needs.version.outputs.major-version }}
             ghcr.io/${{ github.repository }}:${{ needs.version.outputs.minor-version }}
-            ghcr.io/${{ github.repository }}:${{ needs.version.outputs.sha }}
             ghcr.io/${{ github.repository }}:latest
           push: true
           github-token: ${{ secrets.GITHUB_TOKEN }}

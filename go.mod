@@ -4,7 +4,7 @@ go 1.23
 
 require (
 	github.com/gin-contrib/cors v1.7.2
-	github.com/gin-gonic/gin v1.9.1
+	github.com/gin-gonic/gin v1.10.0
 	github.com/go-orm/gorm v0.0.0-20161201081620-eb06255b667d
 	github.com/rs/zerolog v1.33.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -18,7 +18,7 @@ require (
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/validator/v10 v10.20.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
-	github.com/pelletier/go-toml/v2 v2.2.1 // indirect
+	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
 )
 
 require (

@@ -64,9 +64,9 @@ jobs:
         with:
           tags: |
             ghcr.io/${{ github.repository }}:${{ needs.version.outputs.version }}
-            ghcr.io/${{ github.repository }}:${{ needs.release.outputs.major-version }}
-            ghcr.io/${{ github.repository }}:${{ needs.release.outputs.minor-version }}
-            ghcr.io/${{ github.repository }}:${{ needs.release.outputs.sha }}
+            ghcr.io/${{ github.repository }}:${{ needs.version.outputs.major-version }}
+            ghcr.io/${{ github.repository }}:${{ needs.version.outputs.minor-version }}
+            ghcr.io/${{ github.repository }}:${{ needs.version.outputs.sha }}
             ghcr.io/${{ github.repository }}:latest
           push: true
           github-token: ${{ secrets.GITHUB_TOKEN }}

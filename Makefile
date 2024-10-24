@@ -13,8 +13,8 @@ dev-up: build-image
 dev-down:
 	docker-compose -f dev-tools/docker/api-compose.yaml down
 
-dev-test: dev-down dev-up dev-product-create-and-report
+dev-test: dev-down dev-up dev-create-products
 
-dev-product-create-and-report:
+dev-create-products:
 	sleep 10
-	./dev-tools/scripts/create-product-report-results.sh
+	./dev-tools/scripts/create-products.sh

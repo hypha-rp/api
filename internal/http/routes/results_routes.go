@@ -25,7 +25,7 @@ func InitResultsRoutes(router *gin.RouterGroup, dpOps db.DatabaseOperations) {
 	router.GET("/product/:productId", func(context *gin.Context) {
 		handlers.GetResultsByProductID(dpOps, context)
 	})
-	router.POST("/results", func(context *gin.Context) {
+	router.POST("/", func(context *gin.Context) {
 		handlers.ReportResults(dpOps, context)
 	})
 }

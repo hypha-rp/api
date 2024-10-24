@@ -1,7 +1,9 @@
 package results
 
 import (
+	"bytes"
 	"hypha/api/internal/db"
+	"hypha/api/internal/db/tables"
 	"strings"
 	"time"
 )
@@ -14,18 +16,18 @@ import (
 //
 // Parameters:
 // - testSuites: The JUnitTestSuites containing the test results to be parsed.
-// - dbOperations: The DatabaseOperations interface for interacting with the database.
+// - dbOps: The DatabaseOperations interface for interacting with the database.
 // - productId: The ID of the product for which the test results are being parsed.
 //
 // Returns:
 // - error: An error if there is any issue during the parsing or saving of the test results.
-func ParseJUnitResults(testSuites JUnitTestSuites, dbOperations db.DatabaseOperations, productId string) error {
+func ParseJUnitResults(testSuites JUnitTestSuites, dbOps db.DatabaseOperations, productId string) error {
 	for _, suite := range testSuites.TestSuites {
 		resultModel, err := createResultModel(productId)
 		if err != nil {
 			return err
 		}
-		if err := dbOperations.Create(&resultModel); err != nil {
+		if err := dbOps.Create(&resultModel); err != nil {
 			return err
 		}
 
@@ -33,19 +35,41 @@ func ParseJUnitResults(testSuites JUnitTestSuites, dbOperations db.DatabaseOpera
 		if err != nil {
 			return err
 		}
-		if err := dbOperations.Create(&testSuiteModel); err != nil {
+		if err := dbOps.Create(&testSuiteModel); err != nil {
 			return err
 		}
 
-		if err := createAndSaveProperties(suite.Properties, testSuiteModel.ID, dbOperations); err != nil {
+		if err := createAndSaveProperties(suite.Properties, testSuiteModel.ID, dbOps); err != nil {
 			return err
 		}
 
-		if err := createAndSaveTestCases(suite.TestCases, testSuiteModel.ID, dbOperations); err != nil {
+		if err := createAndSaveTestCases(suite.TestCases, testSuiteModel.ID, dbOps); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+// ContainsTestsuitesTag checks if the given XML content contains a <testsuites> tag.
+//
+// Parameters:
+// - xmlContent: The XML content to check as a byte slice.
+//
+// Returns:
+// - bool: A boolean indicating whether the <testsuites> tag is present in the XML content.
+func ContainsTestsuitesTag(xmlContent []byte) bool {
+	return bytes.Contains(xmlContent, []byte("<testsuites"))
+}
+
+// WrapInTestsuitesTag wraps the given XML content in a <testsuites> tag.
+//
+// Parameters:
+// - xmlContent: The XML content to wrap as a byte slice.
+//
+// Returns:
+// - []byte: A new byte slice with the XML content wrapped in a <testsuites> tag.
+func WrapInTestsuitesTag(xmlContent []byte) []byte {
+	return append([]byte("<testsuites>"), append(xmlContent, []byte("</testsuites>")...)...)
 }
 
 // trimLeadingWhitespace removes the leading whitespace from each line of the input text.
@@ -107,10 +131,10 @@ func trimLeadingWhitespace(text string) string {
 // - productId: The ID of the product for which the result is being created.
 //
 // Returns:
-// - db.Result: The created Result model.
+// - tables.Result: The created Result model.
 // - error: An error if there is any issue during the creation of the model.
-func createResultModel(productId string) (db.Result, error) {
-	return db.Result{
+func createResultModel(productId string) (tables.Result, error) {
+	return tables.Result{
 		ID:           db.GenerateUniqueID(),
 		ProductID:    productId,
 		DateReported: time.Now().UTC(),
@@ -125,10 +149,10 @@ func createResultModel(productId string) (db.Result, error) {
 // - resultID: The ID of the associated result.
 //
 // Returns:
-// - db.TestSuite: The created TestSuite model.
+// - tables.TestSuite: The created TestSuite model.
 // - error: An error if there is any issue during the creation of the model.
-func createTestSuiteModel(suite JUnitTestSuite, resultID string) (db.TestSuite, error) {
-	return db.TestSuite{
+func createTestSuiteModel(suite JUnitTestSuite, resultID string) (tables.TestSuite, error) {
+	return tables.TestSuite{
 		ID:         db.GenerateUniqueID(),
 		ResultID:   resultID,
 		Name:       suite.Name,
@@ -150,23 +174,23 @@ func createTestSuiteModel(suite JUnitTestSuite, resultID string) (db.TestSuite, 
 // Parameters:
 // - properties: A slice of Property structs containing the data for each property.
 // - testSuiteID: The ID of the associated test suite.
-// - dbOperations: The DatabaseOperations interface for interacting with the database.
+// - dbOps: The DatabaseOperations interface for interacting with the database.
 //
 // Returns:
 // - error: An error if there is any issue during the creation or saving of the properties.
-func createAndSaveProperties(properties []Property, testSuiteID string, dbOperations db.DatabaseOperations) error {
+func createAndSaveProperties(properties []Property, testSuiteID string, dbOps db.DatabaseOperations) error {
 	for _, property := range properties {
 		value := property.Value
 		if value == "" {
 			value = trimLeadingWhitespace(property.Text)
 		}
-		propertyModel := db.Property{
+		propertyModel := tables.Property{
 			ID:          db.GenerateUniqueID(),
 			TestSuiteID: &testSuiteID,
 			Name:        property.Name,
 			Value:       value,
 		}
-		if err := dbOperations.Create(&propertyModel); err != nil {
+		if err := dbOps.Create(&propertyModel); err != nil {
 			return err
 		}
 	}
@@ -180,21 +204,21 @@ func createAndSaveProperties(properties []Property, testSuiteID string, dbOperat
 // Parameters:
 // - testCases: A slice of JUnitTestCase structs containing the data for each test case.
 // - testSuiteID: The ID of the associated test suite.
-// - dbOperations: The DatabaseOperations interface for interacting with the database.
+// - dbOps: The DatabaseOperations interface for interacting with the database.
 //
 // Returns:
 // - error: An error if there is any issue during the creation or saving of the test cases or their properties.
-func createAndSaveTestCases(testCases []JUnitTestCase, testSuiteID string, dbOperations db.DatabaseOperations) error {
+func createAndSaveTestCases(testCases []JUnitTestCase, testSuiteID string, dbOps db.DatabaseOperations) error {
 	for _, testCase := range testCases {
 		testCaseModel, err := createTestCaseModel(testCase, testSuiteID)
 		if err != nil {
 			return err
 		}
-		if err := dbOperations.Create(&testCaseModel); err != nil {
+		if err := dbOps.Create(&testCaseModel); err != nil {
 			return err
 		}
 
-		if err := createAndSaveTestCaseProperties(testCase.Properties, testCaseModel.ID, dbOperations); err != nil {
+		if err := createAndSaveTestCaseProperties(testCase.Properties, testCaseModel.ID, dbOps); err != nil {
 			return err
 		}
 	}
@@ -209,12 +233,12 @@ func createAndSaveTestCases(testCases []JUnitTestCase, testSuiteID string, dbOpe
 // - testSuiteID: The ID of the associated test suite.
 //
 // Returns:
-// - db.TestCase: The created TestCase model.
+// - tables.TestCase: The created TestCase model.
 // - error: An error if there is any issue during the creation of the model.
-func createTestCaseModel(testCase JUnitTestCase, testSuiteID string) (db.TestCase, error) {
+func createTestCaseModel(testCase JUnitTestCase, testSuiteID string) (tables.TestCase, error) {
 	status, message, testCaseType := determineTestCaseStatus(testCase)
 
-	return db.TestCase{
+	return tables.TestCase{
 		ID:          db.GenerateUniqueID(),
 		TestSuiteID: testSuiteID,
 		ClassName:   testCase.ClassName,
@@ -269,23 +293,23 @@ func determineTestCaseStatus(testCase JUnitTestCase) (string, *string, *string) 
 // Parameters:
 // - properties: A slice of Property structs containing the data for each property.
 // - testCaseID: The ID of the associated test case.
-// - dbOperations: The DatabaseOperations interface for interacting with the database.
+// - dbOps: The DatabaseOperations interface for interacting with the database.
 //
 // Returns:
 // - error: An error if there is any issue during the creation or saving of the properties.
-func createAndSaveTestCaseProperties(properties []Property, testCaseID string, dbOperations db.DatabaseOperations) error {
+func createAndSaveTestCaseProperties(properties []Property, testCaseID string, dbOps db.DatabaseOperations) error {
 	for _, property := range properties {
 		value := property.Value
 		if value == "" {
 			value = trimLeadingWhitespace(property.Text)
 		}
-		propertyModel := db.Property{
+		propertyModel := tables.Property{
 			ID:         db.GenerateUniqueID(),
 			TestCaseID: &testCaseID,
 			Name:       property.Name,
 			Value:      value,
 		}
-		if err := dbOperations.Create(&propertyModel); err != nil {
+		if err := dbOps.Create(&propertyModel); err != nil {
 			return err
 		}
 	}

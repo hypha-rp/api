@@ -2,9 +2,7 @@ package http
 
 import (
 	"hypha/api/internal/db"
-	db_group "hypha/api/internal/http/db"
-	"hypha/api/internal/http/report"
-	"hypha/api/internal/http/results"
+	"hypha/api/internal/http/routes"
 	"hypha/api/internal/utils/logging"
 
 	"github.com/gin-gonic/gin"
@@ -12,18 +10,22 @@ import (
 
 var log = logging.Logger
 
-func InitRoutes(router *gin.Engine, dbOperations db.DatabaseOperations) {
+// InitRoutes initializes all the routes for the given router engine.
+// It sets up the database-related routes and results-related routes.
+//
+// Parameters:
+// - router: The Gin engine to which the routes will be added.
+// - dbOps: The database operations interface used for database interactions.
+func InitRoutes(router *gin.Engine, dbOps db.DatabaseOperations) {
 	log.Info().Msg("Initializing routes")
 
 	dbGroup := router.Group("/db")
-	db_group.InitProductRoutes(dbGroup, dbOperations)
-	db_group.InitIntegrationRoutes(dbGroup, dbOperations)
+	routes.InitProductRoutes(dbGroup, dbOps)
+	routes.InitRelationshipRoutes(dbGroup, dbOps)
+	routes.InitRuleRoutes(dbGroup, dbOps)
 
 	resultsGroup := router.Group("/results")
-	results.InitResultsRoutes(resultsGroup, dbOperations)
-
-	reportGroup := router.Group("/report")
-	report.InitReportRoutes(reportGroup, dbOperations)
+	routes.InitResultsRoutes(resultsGroup, dbOps)
 
 	log.Info().Msg("Routes initialized")
 }
